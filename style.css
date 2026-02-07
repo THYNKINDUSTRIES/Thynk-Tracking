@@ -1,5 +1,5 @@
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background-color: #f0f0f0; /* Light grey */
     font-family: Arial, sans-serif;
     min-height: 100vh;
 }
@@ -11,7 +11,7 @@ body {
 }
 
 .card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%); /* Bronze to copper */
     color: white;
     border-radius: 10px 10px 0 0 !important;
 }
@@ -20,6 +20,13 @@ body {
     font-size: 1.1rem;
     padding: 10px 20px;
     border-radius: 5px;
+    background-color: #CD7F32; /* Bronze */
+    border-color: #CD7F32;
+}
+
+.btn:hover {
+    background-color: #B87333; /* Copper */
+    border-color: #B87333;
 }
 
 .table th, .table td {
