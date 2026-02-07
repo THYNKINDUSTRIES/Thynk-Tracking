@@ -1066,11 +1066,11 @@ function importData() {
                 }
                 
                 // Merge arrays, avoiding duplicates by ID
-                if (importedData.lots) lots = mergByIdField(lots, importedData.lots);
-                if (importedData.processes) processes = mergByIdField(processes, importedData.processes);
-                if (importedData.shipments) shipments = mergByIdField(shipments, importedData.shipments);
-                if (importedData.chainOfCustody) chainOfCustody = mergByIdField(chainOfCustody, importedData.chainOfCustody);
-                if (importedData.coas) coas = mergByIdField(coas, importedData.coas);
+                if (importedData.lots) lots = mergeByIdField(lots, importedData.lots);
+                if (importedData.processes) processes = mergeByIdField(processes, importedData.processes);
+                if (importedData.shipments) shipments = mergeByIdField(shipments, importedData.shipments);
+                if (importedData.chainOfCustody) chainOfCustody = mergeByIdField(chainOfCustody, importedData.chainOfCustody);
+                if (importedData.coas) coas = mergeByIdField(coas, importedData.coas);
                 
                 saveData();
                 alert('✓ Data imported successfully!');
@@ -1087,7 +1087,7 @@ function importData() {
     input.click();
 }
 
-function mergByIdField(existing, imported) {
+function mergeByIdField(existing, imported) {
     const merged = [...existing];
     const existingIds = new Set(existing.map(item => item.id));
     
@@ -1271,7 +1271,7 @@ function getStatusColor(status) {
     return colors[status] || 'secondary';
 }
 
-function filterCOAs(status) {
+function filterCOAs(status, event) {
     currentCOAFilter = status;
     
     // Update active button state
