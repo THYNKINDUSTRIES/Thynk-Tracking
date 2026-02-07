@@ -7,6 +7,7 @@ let lots = JSON.parse(localStorage.getItem('lots')) || [];
 let processes = JSON.parse(localStorage.getItem('processes')) || [];
 let shipments = JSON.parse(localStorage.getItem('shipments')) || [];
 let chainOfCustody = JSON.parse(localStorage.getItem('chainOfCustody')) || [];
+let testingRecords = JSON.parse(localStorage.getItem('testingRecords')) || [];
 
 // Current state
 let selectedCategory = '';
@@ -36,6 +37,8 @@ function showSection(sectionId) {
         updateProcessSection();
     } else if (sectionId === 'outputShip') {
         updateShipmentSection();
+    } else if (sectionId === 'testing') {
+        updateTestingSection();
     } else if (sectionId === 'inventory') {
         updateInventoryView();
     } else if (sectionId === 'reports') {
@@ -93,6 +96,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 productType: document.getElementById('intakeProductType').value,
                 cannabinoidProfile: document.getElementById('intakeCannabinoidProfile').value,
                 notes: document.getElementById('intakeNotes').value,
+                // Master Ledger CSV fields
+                invoiceNum: document.getElementById('intakeInvoiceNum').value,
+                invoiceDate: document.getElementById('intakeInvoiceDate').value,
+                customerName: document.getElementById('intakeCustomerName').value,
+                mondayItemId: document.getElementById('intakeMondayItemId').value,
+                mondayLink: document.getElementById('intakeMondayLink').value,
+                productSKU: document.getElementById('intakeProductSKU').value,
+                lotIdentifier: document.getElementById('intakeLotIdentifier').value,
+                coaLink: document.getElementById('intakeCOALink').value,
+                coaMatchVerified: document.getElementById('intakeCOAMatchVerified').value,
                 status: 'active',
                 type: 'intake',
                 timestamp: new Date().toISOString()
@@ -833,7 +846,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 lot.status = 'depleted';
             }
             
-            // Record shipment
+            // Record shipment with all master ledger fields
             const shipment = {
                 lotId,
                 quantity: qty,
@@ -843,6 +856,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 tracking: document.getElementById('shipmentTracking').value,
                 carrier: document.getElementById('shipmentCarrier').value,
                 notes: document.getElementById('shipmentNotes').value,
+                // Master Ledger CSV fields
+                shipToName: document.getElementById('shipmentShipToName').value,
+                shipToAddress: document.getElementById('shipmentShipToAddress').value,
+                shipToCity: document.getElementById('shipmentShipToCity').value,
+                shipToState: document.getElementById('shipmentShipToState').value,
+                shipToZIP: document.getElementById('shipmentShipToZIP').value,
+                upsWebGateId: document.getElementById('shipmentUPSWebGateId').value,
+                routing: document.getElementById('shipmentRouting').value,
+                pricePerUOM: document.getElementById('shipmentPricePerUOM').value,
+                extendedTotal: document.getElementById('shipmentExtendedTotal').value,
+                paymentStatus: document.getElementById('shipmentPaymentStatus').value,
+                packetComplete: document.getElementById('shipmentPacketComplete').value,
+                carrierLetter: document.getElementById('shipmentCarrierLetter').value,
+                licenseCopy: document.getElementById('shipmentLicenseCopy').value,
+                countVerified: document.getElementById('shipmentCountVerified').value,
+                finalSignOff: document.getElementById('shipmentFinalSignOff').value,
+                archiveLink: document.getElementById('shipmentArchiveLink').value,
                 timestamp: new Date().toISOString()
             };
             
@@ -874,6 +904,89 @@ function updateShipmentTable() {
                 <td>${shipment.date}</td>
                 <td>${shipment.tracking || 'N/A'}</td>
                 <td><span class="badge bg-success">Shipped</span></td>
+            </tr>
+        `;
+    });
+}
+
+// ========================================
+// Testing/Verification Functions
+// ========================================
+
+function updateTestingSection() {
+    const select = document.getElementById('testingLot');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">-- Select lot --</option>';
+    
+    lots.forEach(lot => {
+        select.innerHTML += `<option value="${lot.id}">${lot.id} - ${lot.category}</option>`;
+    });
+    
+    document.getElementById('testingCheckedDate').value = new Date().toISOString().split('T')[0];
+    
+    updateTestingTable();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const testingForm = document.getElementById('testingForm');
+    if (testingForm) {
+        testingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const lotId = document.getElementById('testingLot').value;
+            const lot = lots.find(l => l.id === lotId);
+            
+            if (!lot) {
+                alert('Please select a valid lot');
+                return;
+            }
+            
+            // Record testing/verification
+            const testing = {
+                lotId,
+                stateCheck: document.getElementById('testingStateCheck').value,
+                checkedBy: document.getElementById('testingCheckedBy').value,
+                checkedDate: document.getElementById('testingCheckedDate').value,
+                thynkBrainConsulted: document.getElementById('testingThynkBrainConsulted').value,
+                thynkBrainNotes: document.getElementById('testingThynkBrainNotes').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            testingRecords.push(testing);
+            
+            // Update lot with testing info
+            lot.stateCheck = testing.stateCheck;
+            lot.checkedBy = testing.checkedBy;
+            lot.checkedDate = testing.checkedDate;
+            lot.thynkBrainConsulted = testing.thynkBrainConsulted;
+            lot.thynkBrainNotes = testing.thynkBrainNotes;
+            
+            addToChainOfCustody(lotId, 'testing', `State Check: ${testing.stateCheck} by ${testing.checkedBy}`, testing);
+            
+            saveData();
+            
+            alert('✓ Verification recorded successfully!');
+            testingForm.reset();
+            updateTestingSection();
+        });
+    }
+});
+
+function updateTestingTable() {
+    const tbody = document.getElementById('testingTable');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    testingRecords.reverse().slice(0, 20).forEach(testing => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${testing.lotId}</td>
+                <td><span class="badge bg-${testing.stateCheck === 'PASS' ? 'success' : testing.stateCheck === 'FAIL' ? 'danger' : 'warning'}">${testing.stateCheck || 'N/A'}</span></td>
+                <td>${testing.checkedBy || 'N/A'}</td>
+                <td>${testing.checkedDate || 'N/A'}</td>
+                <td>${testing.thynkBrainConsulted || 'N/A'}</td>
             </tr>
         `;
     });
@@ -973,6 +1086,7 @@ function exportAllData() {
         processes,
         shipments,
         chainOfCustody,
+        testingRecords,
         exportDate: new Date().toISOString(),
         version: '1.0'
     };
@@ -987,6 +1101,222 @@ function exportAllData() {
     URL.revokeObjectURL(url);
     
     alert('✓ Data exported successfully!');
+}
+
+function exportMasterLedgerCSV() {
+    // Define CSV columns based on master ledger requirements
+    const headers = [
+        'Invoice #', 'Monday Item ID', 'Monday Link', 'Invoice Date', 'Customer Name',
+        'Ship-To Name', 'Ship-To Address', 'Ship-To City', 'Ship-To State', 'Ship-To ZIP',
+        'Product Type', 'Product / SKU', 'Lot Identifier', 'UOM', 'Qty', 'Price / UOM', 'Extended Total',
+        'Payment Status', 'State Check (PASS/FAIL/CONFIRM)', 'Checked By', 'Checked Date',
+        'Thynk Brain™ Consulted (Y/N)', 'Thynk Brain™ Reference / Notes',
+        'Routing (Standard vs Depot)', 'UPS WebGate Shipment ID', 'Tracking #', 'Ship Date',
+        'COA Link', 'COA Match Verified (Y/N)', 'Packet Complete (Y/N)',
+        'Carrier Attention Letter Included (Y/N)', 'License Copy Included (Y/N)',
+        'Count Verified (Y/N)', 'Final Sign-Off', 'Archive Folder Link', 'Notes / Exception Flag'
+    ];
+    
+    let csvContent = headers.join(',') + '\n';
+    
+    // Combine data from lots, shipments, and testing records
+    lots.forEach(lot => {
+        // Find related shipment
+        const shipment = shipments.find(s => s.lotId === lot.id);
+        
+        const row = [
+            escapeCSV(lot.invoiceNum || ''),
+            escapeCSV(lot.mondayItemId || ''),
+            escapeCSV(lot.mondayLink || ''),
+            escapeCSV(lot.invoiceDate || ''),
+            escapeCSV(lot.customerName || ''),
+            escapeCSV(shipment?.shipToName || ''),
+            escapeCSV(shipment?.shipToAddress || ''),
+            escapeCSV(shipment?.shipToCity || ''),
+            escapeCSV(shipment?.shipToState || ''),
+            escapeCSV(shipment?.shipToZIP || ''),
+            escapeCSV(lot.productType || ''),
+            escapeCSV(lot.productSKU || ''),
+            escapeCSV(lot.lotIdentifier || lot.id),
+            escapeCSV(lot.unit || ''),
+            escapeCSV(lot.quantity || ''),
+            escapeCSV(shipment?.pricePerUOM || ''),
+            escapeCSV(shipment?.extendedTotal || ''),
+            escapeCSV(shipment?.paymentStatus || ''),
+            escapeCSV(lot.stateCheck || ''),
+            escapeCSV(lot.checkedBy || ''),
+            escapeCSV(lot.checkedDate || ''),
+            escapeCSV(lot.thynkBrainConsulted || ''),
+            escapeCSV(lot.thynkBrainNotes || ''),
+            escapeCSV(shipment?.routing || ''),
+            escapeCSV(shipment?.upsWebGateId || ''),
+            escapeCSV(shipment?.tracking || ''),
+            escapeCSV(shipment?.date || ''),
+            escapeCSV(lot.coaLink || ''),
+            escapeCSV(lot.coaMatchVerified || ''),
+            escapeCSV(shipment?.packetComplete || ''),
+            escapeCSV(shipment?.carrierLetter || ''),
+            escapeCSV(shipment?.licenseCopy || ''),
+            escapeCSV(shipment?.countVerified || ''),
+            escapeCSV(shipment?.finalSignOff || ''),
+            escapeCSV(shipment?.archiveLink || ''),
+            escapeCSV(lot.notes || '')
+        ];
+        
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `master-ledger-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    alert('✓ Master Ledger CSV exported successfully!');
+}
+
+function escapeCSV(value) {
+    if (value === null || value === undefined) return '';
+    const stringValue = String(value);
+    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return '"' + stringValue.replace(/"/g, '""') + '"';
+    }
+    return stringValue;
+}
+
+function importMasterLedgerCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const csv = e.target.result;
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            let importedCount = 0;
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = parseCSVLine(lines[i]);
+                if (values.length < headers.length) continue;
+                
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                
+                // Create or update lot
+                const lotId = row['Lot Identifier'] || `LOT-${Date.now()}-${i}`;
+                let lot = lots.find(l => l.id === lotId);
+                
+                if (!lot) {
+                    lot = {
+                        id: lotId,
+                        category: row['Product Type'] || 'Unknown',
+                        quantity: parseFloat(row['Qty']) || 0,
+                        originalQuantity: parseFloat(row['Qty']) || 0,
+                        unit: row['UOM'] || 'units',
+                        status: 'active',
+                        type: 'intake',
+                        timestamp: new Date().toISOString()
+                    };
+                    lots.push(lot);
+                }
+                
+                // Update lot with CSV data
+                lot.invoiceNum = row['Invoice #'];
+                lot.mondayItemId = row['Monday Item ID'];
+                lot.mondayLink = row['Monday Link'];
+                lot.invoiceDate = row['Invoice Date'];
+                lot.customerName = row['Customer Name'];
+                lot.productType = row['Product Type'];
+                lot.productSKU = row['Product / SKU'];
+                lot.lotIdentifier = row['Lot Identifier'];
+                lot.coaLink = row['COA Link'];
+                lot.coaMatchVerified = row['COA Match Verified (Y/N)'];
+                lot.stateCheck = row['State Check (PASS/FAIL/CONFIRM)'];
+                lot.checkedBy = row['Checked By'];
+                lot.checkedDate = row['Checked Date'];
+                lot.thynkBrainConsulted = row['Thynk Brain™ Consulted (Y/N)'];
+                lot.thynkBrainNotes = row['Thynk Brain™ Reference / Notes'];
+                lot.notes = row['Notes / Exception Flag'];
+                
+                // Create shipment if ship data exists
+                if (row['Ship Date'] || row['Tracking #']) {
+                    const existingShipment = shipments.find(s => s.lotId === lotId && s.date === row['Ship Date']);
+                    if (!existingShipment) {
+                        const shipment = {
+                            lotId: lotId,
+                            date: row['Ship Date'],
+                            tracking: row['Tracking #'],
+                            carrier: 'Imported',
+                            shipToName: row['Ship-To Name'],
+                            shipToAddress: row['Ship-To Address'],
+                            shipToCity: row['Ship-To City'],
+                            shipToState: row['Ship-To State'],
+                            shipToZIP: row['Ship-To ZIP'],
+                            upsWebGateId: row['UPS WebGate Shipment ID'],
+                            routing: row['Routing (Standard vs Depot)'],
+                            pricePerUOM: row['Price / UOM'],
+                            extendedTotal: row['Extended Total'],
+                            paymentStatus: row['Payment Status'],
+                            packetComplete: row['Packet Complete (Y/N)'],
+                            carrierLetter: row['Carrier Attention Letter Included (Y/N)'],
+                            licenseCopy: row['License Copy Included (Y/N)'],
+                            countVerified: row['Count Verified (Y/N)'],
+                            finalSignOff: row['Final Sign-Off'],
+                            archiveLink: row['Archive Folder Link'],
+                            timestamp: new Date().toISOString()
+                        };
+                        shipments.push(shipment);
+                    }
+                }
+                
+                importedCount++;
+            }
+            
+            saveData();
+            alert(`✓ Successfully imported ${importedCount} records from CSV!`);
+            showSection('dashboard');
+            
+        } catch (error) {
+            alert('Error importing CSV: ' + error.message);
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
+function parseCSVLine(line) {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    values.push(current.trim());
+    return values;
 }
 
 function generateSummaryReport() {
@@ -1100,6 +1430,7 @@ function saveData() {
     localStorage.setItem('processes', JSON.stringify(processes));
     localStorage.setItem('shipments', JSON.stringify(shipments));
     localStorage.setItem('chainOfCustody', JSON.stringify(chainOfCustody));
+    localStorage.setItem('testingRecords', JSON.stringify(testingRecords));
 }
 
 // ========================================
