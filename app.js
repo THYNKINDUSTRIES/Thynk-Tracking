@@ -980,7 +980,7 @@ function viewLotDetails(lotId) {
     if (lotCOAs.length > 0) {
         coaInfo = '\n\nCOAs:\n';
         lotCOAs.forEach((coa, index) => {
-            coaInfo += `  ${index + 1}. Status: ${coa.status}${coa.url ? ', Link: ' + coa.url : ''}\n`;
+            coaInfo += `  ${index + 1}. Status: ${formatStatusText(coa.status)}${coa.url ? ', Link: ' + coa.url : ''}\n`;
         });
     } else {
         coaInfo = '\n\nCOAs: None';
@@ -1247,7 +1247,7 @@ function updateCOATable() {
                     </a>` : '<span class="text-muted">No URL</span>'}
                 </td>
                 <td>
-                    <span class="badge bg-${getStatusColor(coa.status)}">${coa.status}</span>
+                    <span class="badge bg-${getStatusColor(coa.status)}">${formatStatusText(coa.status)}</span>
                 </td>
                 <td>${coa.notes || 'N/A'}</td>
                 <td>${new Date(coa.timestamp).toLocaleString()}</td>
@@ -1271,14 +1271,23 @@ function getStatusColor(status) {
     return colors[status] || 'secondary';
 }
 
+function formatStatusText(status) {
+    const formatted = {
+        'pending': 'Pending',
+        'in-house': 'In-House',
+        'lab': 'Lab'
+    };
+    return formatted[status] || status;
+}
+
 function filterCOAs(status, event) {
     currentCOAFilter = status;
     
-    // Update active button state
+    // Update active button state - use currentTarget to ensure we get the button element
     document.querySelectorAll('.coa-filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    event.currentTarget.classList.add('active');
     
     updateCOATable();
 }
