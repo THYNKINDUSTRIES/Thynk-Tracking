@@ -1,6 +1,6 @@
-# Hemp Traceability System
+# Thynk Trace
 
-A lightweight, user-friendly hemp traceability system for internal use, designed to track bulk hemp processing into finished goods with complete chain of custody.
+Hemp Traceability System
 
 ## Deployment
 
