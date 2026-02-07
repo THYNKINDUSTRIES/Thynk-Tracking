@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
             coas.push(coa);
             
             // Add to chain of custody
-            addToChainOfCustody(coa.lotId, 'coa', `COA ${coa.status} - ${coa.url ? 'Link added' : 'No link'}`, coa);
+            addToChainOfCustody(coa.lotId, 'COA', `COA ${coa.status} - ${coa.url ? 'Link added' : 'No link'}`, coa);
             
             saveData();
             updateCOATable();
@@ -980,7 +980,7 @@ function viewLotDetails(lotId) {
     if (lotCOAs.length > 0) {
         coaInfo = '\n\nCOAs:\n';
         lotCOAs.forEach((coa, index) => {
-            coaInfo += `  ${index + 1}. Status: ${formatStatusText(coa.status)}${coa.url ? ', Link: ' + coa.url : ''}\n`;
+            coaInfo += `  ${index + 1}. Status: ${formatStatusText(coa.status)}${coa.url ? `, Link: ${coa.url}` : ''}\n`;
         });
     } else {
         coaInfo = '\n\nCOAs: None';
@@ -1287,7 +1287,11 @@ function filterCOAs(status, event) {
     document.querySelectorAll('.coa-filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.currentTarget.classList.add('active');
+    
+    // Only update the button state if event is provided (from user click)
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
     
     updateCOATable();
 }
