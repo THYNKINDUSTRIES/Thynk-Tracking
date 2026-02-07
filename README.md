@@ -2,6 +2,41 @@
 
 A lightweight, user-friendly hemp traceability system for internal use, designed to track bulk hemp processing into finished goods with complete chain of custody.
 
+## Deployment
+
+### Backend Setup (Google Sheets Integration)
+
+1. **Google Sheets API Setup**:
+   - Create a Google Cloud Project at https://console.cloud.google.com/
+   - Enable the Google Sheets API
+   - Create a Service Account: IAM & Admin > Service Accounts > Create Service Account
+   - Generate a JSON key and download as `service_account.json`
+   - Create a Google Sheet and share it with the service account email
+   - Copy the Sheet ID from the URL and update `sheet_id` in `app.py`
+   - Create worksheets: Lots, Processes, Shipments, ChainOfCustody, TestingRecords
+
+2. **Install Backend Dependencies**:
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. **Run Backend Locally**:
+   ```
+   python app.py
+   ```
+
+4. **Deploy Backend**:
+   - Use Heroku, Railway, or Render
+   - Push the code to a Git repo
+   - Set up the service account key as an environment variable or file
+
+### Frontend Deployment
+
+1. **Deploy to Netlify/Vercel**:
+   - Upload the `index.html`, `app.js`, `style.css` files
+   - Or connect the GitHub repo
+   - Update API calls in `app.js` to point to the backend URL (e.g., change `/api/` to `https://your-backend-url/api/`)
+
 ## Features
 
 ### 🌿 Product Categories

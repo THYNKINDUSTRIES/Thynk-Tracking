@@ -3,11 +3,44 @@
 // ========================================
 
 // Data structures
-let lots = JSON.parse(localStorage.getItem('lots')) || [];
-let processes = JSON.parse(localStorage.getItem('processes')) || [];
-let shipments = JSON.parse(localStorage.getItem('shipments')) || [];
-let chainOfCustody = JSON.parse(localStorage.getItem('chainOfCustody')) || [];
-let testingRecords = JSON.parse(localStorage.getItem('testingRecords')) || [];
+let lots = [];
+let processes = [];
+let shipments = [];
+let chainOfCustody = [];
+let testingRecords = [];
+
+// Load data from backend
+async function loadData() {
+    try {
+        const [lotsRes, processesRes, shipmentsRes, cocRes, testingRes] = await Promise.all([
+            fetch('/api/lots'),
+            fetch('/api/processes'),
+            fetch('/api/shipments'),
+            fetch('/api/chainOfCustody'),
+            fetch('/api/testingRecords')
+        ]);
+        lots = await lotsRes.json();
+        processes = await processesRes.json();
+        shipments = await shipmentsRes.json();
+        chainOfCustody = await cocRes.json();
+        testingRecords = await testingRes.json();
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
+
+// Save data to backend
+async function saveData(type, data) {
+    try {
+        await fetch(`/api/${type}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (error) {
+        console.error('Error saving data:', error);
+    }
+}
 
 // Current state
 let selectedCategory = '';
