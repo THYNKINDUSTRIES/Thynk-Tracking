@@ -150,6 +150,12 @@
                     </button>
                 </div>
                 <div class="col-md-4 col-lg-2">
+                    <button class="btn btn-warning big-button w-100" onclick="showSection('testing')">
+                        <i class="bi bi-clipboard-check"></i>
+                        Testing/Verification
+                    </button>
+                </div>
+                <div class="col-md-4 col-lg-2">
                     <button class="btn btn-secondary big-button w-100" onclick="showSection('inventory')">
                         <i class="bi bi-archive"></i>
                         Inventory
@@ -239,6 +245,7 @@
             <div id="intakeFormSection" class="wizard-step" style="display: none;">
                 <h5><i class="bi bi-2-circle-fill text-primary"></i> Step 2: Enter Details</h5>
                 <form id="intakeForm" class="row g-3">
+                    <!-- Basic Information -->
                     <div class="col-md-6">
                         <label class="form-label">Lot ID / Batch Number</label>
                         <input type="text" class="form-control" id="intakeLotId" required>
@@ -253,7 +260,7 @@
                         <input type="number" step="0.01" class="form-control" id="intakeQuantity" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Unit</label>
+                        <label class="form-label">Unit (UOM)</label>
                         <select class="form-control" id="intakeUnit" required>
                             <option value="lbs">Pounds (lbs)</option>
                             <option value="kg">Kilograms (kg)</option>
@@ -265,22 +272,124 @@
                         <label class="form-label">Date Received</label>
                         <input type="date" class="form-control" id="intakeDate" required>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Vendor/Source</label>
-                        <input type="text" class="form-control" id="intakeVendor" required>
+                    
+                    <!-- Invoice & Customer Details (Collapsible) -->
+                    <div class="col-12">
+                        <div class="accordion" id="intakeAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#invoiceSection">
+                                        <i class="bi bi-receipt me-2"></i> Invoice & Customer Details
+                                    </button>
+                                </h2>
+                                <div id="invoiceSection" class="accordion-collapse collapse" data-bs-parent="#intakeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Invoice #</label>
+                                                <input type="text" class="form-control" id="intakeInvoiceNum">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Invoice Date</label>
+                                                <input type="date" class="form-control" id="intakeInvoiceDate">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Customer Name</label>
+                                                <input type="text" class="form-control" id="intakeCustomerName">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Vendor/Source</label>
+                                                <input type="text" class="form-control" id="intakeVendor" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mondaySection">
+                                        <i class="bi bi-link-45deg me-2"></i> Monday.com Integration
+                                    </button>
+                                </h2>
+                                <div id="mondaySection" class="accordion-collapse collapse" data-bs-parent="#intakeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Monday Item ID</label>
+                                                <input type="text" class="form-control" id="intakeMondayItemId">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Monday Link</label>
+                                                <input type="url" class="form-control" id="intakeMondayLink" placeholder="https://...">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#productSection">
+                                        <i class="bi bi-box-seam me-2"></i> Product Details
+                                    </button>
+                                </h2>
+                                <div id="productSection" class="accordion-collapse collapse" data-bs-parent="#intakeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Product Type</label>
+                                                <input type="text" class="form-control" id="intakeProductType" placeholder="e.g., THCa Flower, CBD Isolate">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Product / SKU</label>
+                                                <input type="text" class="form-control" id="intakeProductSKU">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Lot Identifier</label>
+                                                <input type="text" class="form-control" id="intakeLotIdentifier">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Cannabinoid Profile</label>
+                                                <input type="text" class="form-control" id="intakeCannabinoidProfile" placeholder="e.g., THC: 15%, CBD: 0.5%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#coaSection">
+                                        <i class="bi bi-file-earmark-check me-2"></i> COA & Documentation
+                                    </button>
+                                </h2>
+                                <div id="coaSection" class="accordion-collapse collapse" data-bs-parent="#intakeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">COA Link</label>
+                                                <input type="url" class="form-control" id="intakeCOALink" placeholder="https://...">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">COA Match Verified</label>
+                                                <select class="form-control" id="intakeCOAMatchVerified">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Y">Yes</option>
+                                                    <option value="N">No</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label">Notes / Exception Flag</label>
+                                                <textarea class="form-control" id="intakeNotes" rows="2"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Product Type (optional)</label>
-                        <input type="text" class="form-control" id="intakeProductType" placeholder="e.g., THCa Flower, CBD Isolate">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Cannabinoid Profile (optional)</label>
-                        <input type="text" class="form-control" id="intakeCannabinoidProfile" placeholder="e.g., THC: 15%, CBD: 0.5%">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-control" id="intakeNotes" rows="2"></textarea>
-                    </div>
+                    
                     <div class="col-12">
                         <button type="submit" class="btn btn-custom btn-lg">
                             <i class="bi bi-check-circle"></i> Record Intake
@@ -619,6 +728,7 @@
                 <p class="text-muted">Track outgoing products and maintain chain of custody</p>
                 
                 <form id="shipmentForm" class="row g-3">
+                    <!-- Basic Shipment Info -->
                     <div class="col-md-6">
                         <label class="form-label">Select Lot to Ship</label>
                         <select class="form-control" id="shipmentLot" required>
@@ -634,21 +744,173 @@
                         <input type="text" class="form-control" id="shipmentRecipient" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Shipment Date</label>
+                        <label class="form-label">Ship Date</label>
                         <input type="date" class="form-control" id="shipmentDate" required>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tracking Number (optional)</label>
-                        <input type="text" class="form-control" id="shipmentTracking">
+                    
+                    <!-- Expandable Sections -->
+                    <div class="col-12">
+                        <div class="accordion" id="shipmentAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shipToSection">
+                                        <i class="bi bi-geo-alt me-2"></i> Ship-To Address
+                                    </button>
+                                </h2>
+                                <div id="shipToSection" class="accordion-collapse collapse" data-bs-parent="#shipmentAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ship-To Name</label>
+                                                <input type="text" class="form-control" id="shipmentShipToName">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ship-To Address</label>
+                                                <input type="text" class="form-control" id="shipmentShipToAddress">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Ship-To City</label>
+                                                <input type="text" class="form-control" id="shipmentShipToCity">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Ship-To State</label>
+                                                <input type="text" class="form-control" id="shipmentShipToState" maxlength="2" pattern="[A-Z]{2}" style="text-transform: uppercase" placeholder="e.g., CA">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Ship-To ZIP</label>
+                                                <input type="text" class="form-control" id="shipmentShipToZIP">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#trackingSection">
+                                        <i class="bi bi-truck me-2"></i> Shipping & Tracking Details
+                                    </button>
+                                </h2>
+                                <div id="trackingSection" class="accordion-collapse collapse" data-bs-parent="#shipmentAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Carrier</label>
+                                                <input type="text" class="form-control" id="shipmentCarrier" placeholder="e.g., UPS, FedEx">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Tracking #</label>
+                                                <input type="text" class="form-control" id="shipmentTracking">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">UPS WebGate Shipment ID</label>
+                                                <input type="text" class="form-control" id="shipmentUPSWebGateId">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Routing</label>
+                                                <select class="form-control" id="shipmentRouting">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Standard">Standard</option>
+                                                    <option value="Depot">Depot</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#invoiceShipSection">
+                                        <i class="bi bi-receipt me-2"></i> Invoice & Payment
+                                    </button>
+                                </h2>
+                                <div id="invoiceShipSection" class="accordion-collapse collapse" data-bs-parent="#shipmentAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Price / UOM</label>
+                                                <input type="number" step="0.01" class="form-control" id="shipmentPricePerUOM" placeholder="0.00">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Extended Total</label>
+                                                <input type="number" step="0.01" class="form-control" id="shipmentExtendedTotal" placeholder="0.00">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Payment Status</label>
+                                                <select class="form-control" id="shipmentPaymentStatus">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="Paid">Paid</option>
+                                                    <option value="Partial">Partial</option>
+                                                    <option value="Overdue">Overdue</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#packetSection">
+                                        <i class="bi bi-file-earmark-check me-2"></i> Packet & Documentation
+                                    </button>
+                                </h2>
+                                <div id="packetSection" class="accordion-collapse collapse" data-bs-parent="#shipmentAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Packet Complete</label>
+                                                <select class="form-control" id="shipmentPacketComplete">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Y">Yes</option>
+                                                    <option value="N">No</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Carrier Attention Letter Included</label>
+                                                <select class="form-control" id="shipmentCarrierLetter">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Y">Yes</option>
+                                                    <option value="N">No</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">License Copy Included</label>
+                                                <select class="form-control" id="shipmentLicenseCopy">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Y">Yes</option>
+                                                    <option value="N">No</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Count Verified</label>
+                                                <select class="form-control" id="shipmentCountVerified">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Y">Yes</option>
+                                                    <option value="N">No</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Final Sign-Off</label>
+                                                <input type="text" class="form-control" id="shipmentFinalSignOff" placeholder="Initials or name">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Archive Folder Link</label>
+                                                <input type="url" class="form-control" id="shipmentArchiveLink" placeholder="https://...">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label">Notes / Exception Flag</label>
+                                                <textarea class="form-control" id="shipmentNotes" rows="2"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Carrier (optional)</label>
-                        <input type="text" class="form-control" id="shipmentCarrier" placeholder="e.g., UPS, FedEx">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-control" id="shipmentNotes" rows="2"></textarea>
-                    </div>
+                    
                     <div class="col-12">
                         <button type="submit" class="btn btn-custom btn-lg">
                             <i class="bi bi-check-circle"></i> Record Shipment
@@ -673,6 +935,116 @@
                         </tr>
                     </thead>
                     <tbody id="shipmentTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Testing/Verification Section -->
+        <div id="testing" class="nav-section section-hidden">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-clipboard-check"></i> Testing & Verification</h2>
+                <button class="btn btn-secondary" onclick="showSection('dashboard')">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+
+            <div class="wizard-step">
+                <h5><i class="bi bi-1-circle-fill text-primary"></i> Record Lab Testing & State Compliance</h5>
+                <p class="text-muted">Document lab results, state checks, and compliance verification</p>
+                
+                <form id="testingForm" class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Select Lot to Verify</label>
+                        <select class="form-control" id="testingLot" required>
+                            <option value="">-- Select lot --</option>
+                        </select>
+                    </div>
+                    
+                    <!-- State Compliance Check -->
+                    <div class="col-12">
+                        <div class="accordion" id="testingAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#stateCheckSection">
+                                        <i class="bi bi-shield-check me-2"></i> State Compliance Check
+                                    </button>
+                                </h2>
+                                <div id="stateCheckSection" class="accordion-collapse collapse show" data-bs-parent="#testingAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">State Check</label>
+                                                <select class="form-control" id="testingStateCheck">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="PASS">PASS</option>
+                                                    <option value="FAIL">FAIL</option>
+                                                    <option value="CONFIRM">CONFIRM</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Checked By</label>
+                                                <input type="text" class="form-control" id="testingCheckedBy">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Checked Date</label>
+                                                <input type="date" class="form-control" id="testingCheckedDate">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#thynkBrainSection">
+                                        <i class="bi bi-cpu me-2"></i> Thynk Brain™ Consultation
+                                    </button>
+                                </h2>
+                                <div id="thynkBrainSection" class="accordion-collapse collapse" data-bs-parent="#testingAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Thynk Brain™ Consulted</label>
+                                                <select class="form-control" id="testingThynkBrainConsulted">
+                                                    <option value="">-- Select --</option>
+                                                    <option value="Y">Yes</option>
+                                                    <option value="N">No</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label">Thynk Brain™ Reference / Notes</label>
+                                                <textarea class="form-control" id="testingThynkBrainNotes" rows="3"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-custom btn-lg">
+                            <i class="bi bi-check-circle"></i> Record Verification
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <hr class="my-4">
+            
+            <h4>Recent Verifications</h4>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Lot ID</th>
+                            <th>State Check</th>
+                            <th>Checked By</th>
+                            <th>Checked Date</th>
+                            <th>Thynk Brain™</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testingTable"></tbody>
                 </table>
             </div>
         </div>
@@ -726,16 +1098,38 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="wizard-step">
-                        <h5><i class="bi bi-download"></i> Export Data</h5>
-                        <p class="text-muted">Export all data as JSON for API integration or backup</p>
-                        <button class="btn btn-custom btn-lg w-100" onclick="exportAllData()">
-                            <i class="bi bi-file-earmark-code"></i> Export All Data (JSON)
+                        <h5><i class="bi bi-file-earmark-spreadsheet"></i> Export Master Ledger CSV</h5>
+                        <p class="text-muted">Export data in master ledger CSV format</p>
+                        <button class="btn btn-custom btn-lg w-100" onclick="exportMasterLedgerCSV()">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
                         </button>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="wizard-step">
+                        <h5><i class="bi bi-download"></i> Export JSON</h5>
+                        <p class="text-muted">Export all data as JSON for backup</p>
+                        <button class="btn btn-custom btn-lg w-100" onclick="exportAllData()">
+                            <i class="bi bi-file-earmark-code"></i> Export JSON
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="wizard-step">
+                        <h5><i class="bi bi-upload"></i> Import CSV Data</h5>
+                        <p class="text-muted">Import master ledger CSV file</p>
+                        <input type="file" id="csvImportFile" accept=".csv" style="display: none;" onchange="importMasterLedgerCSV(event)">
+                        <button class="btn btn-success btn-lg w-100" onclick="document.getElementById('csvImportFile').click()">
+                            <i class="bi bi-upload"></i> Import CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
                     <div class="wizard-step">
                         <h5><i class="bi bi-bar-chart"></i> Summary Report</h5>
                         <p class="text-muted">View comprehensive system summary</p>
