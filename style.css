@@ -1,7 +1,8 @@
 body {
-    background-color: #f0f0f0; /* Light grey */
-    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #2c2c2c 0%, #000000 100%); /* Dark grey to black gradient */
+    font-family: 'Roboto', Arial, sans-serif;
     min-height: 100vh;
+    color: #ffffff; /* White text for dark background */
 }
 
 .card {
