@@ -163,6 +163,16 @@
                 </div>
             </div>
 
+            <!-- Second Row for Additional Features -->
+            <div class="row text-center mt-3">
+                <div class="col-md-4 col-lg-2 offset-lg-5">
+                    <button class="btn btn-primary big-button w-100" onclick="showSection('coaManagement')" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <i class="bi bi-file-earmark-check"></i>
+                        COA Management
+                    </button>
+                </div>
+            </div>
+
             <!-- Quick Stats -->
             <div class="row mt-5">
                 <div class="col-md-3">
@@ -726,7 +736,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="wizard-step">
                         <h5><i class="bi bi-download"></i> Export Data</h5>
                         <p class="text-muted">Export all data as JSON for API integration or backup</p>
@@ -735,7 +745,16 @@
                         </button>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="wizard-step">
+                        <h5><i class="bi bi-upload"></i> Import Data</h5>
+                        <p class="text-muted">Import JSON data from external systems</p>
+                        <button class="btn btn-custom btn-lg w-100" onclick="importData()">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Import Data (JSON)
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
                     <div class="wizard-step">
                         <h5><i class="bi bi-bar-chart"></i> Summary Report</h5>
                         <p class="text-muted">View comprehensive system summary</p>
@@ -761,6 +780,85 @@
                 </select>
             </div>
             <div id="chainOfCustodyDisplay"></div>
+        </div>
+
+        <!-- COA Management Section -->
+        <div id="coaManagement" class="nav-section section-hidden">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-file-earmark-check"></i> COA Management</h2>
+                <button class="btn btn-secondary" onclick="showSection('dashboard')">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+
+            <p class="lead">Manage Certificates of Analysis (COA) for your lots. Link to external storage like Dropbox, Google Drive, or any URL.</p>
+
+            <!-- COA Form -->
+            <div class="wizard-step">
+                <h5><i class="bi bi-plus-circle"></i> Add New COA Record</h5>
+                <form id="coaForm" class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Lot ID <span class="text-danger">*</span></label>
+                        <select class="form-control" id="coaLotId" required>
+                            <option value="">-- Select a lot --</option>
+                        </select>
+                        <small class="text-muted">Select the lot this COA belongs to</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">COA Status <span class="text-danger">*</span></label>
+                        <select class="form-control" id="coaStatus" required>
+                            <option value="pending">Pending</option>
+                            <option value="in-house">In-House</option>
+                            <option value="lab">Lab</option>
+                        </select>
+                        <small class="text-muted">Current status of the COA</small>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">COA URL (optional)</label>
+                        <input type="url" class="form-control" id="coaUrl" placeholder="https://dropbox.com/your-coa-file or https://drive.google.com/...">
+                        <small class="text-muted">Link to COA document in Dropbox, Google Drive, or any other storage</small>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" id="coaNotes" rows="2" placeholder="Additional notes about this COA"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-custom btn-lg">
+                            <i class="bi bi-check-circle"></i> Add COA Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Filter Buttons -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>COA Records</h4>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary coa-filter-btn active" onclick="filterCOAs('all')">All</button>
+                    <button type="button" class="btn btn-outline-warning coa-filter-btn" onclick="filterCOAs('pending')">Pending</button>
+                    <button type="button" class="btn btn-outline-info coa-filter-btn" onclick="filterCOAs('in-house')">In-House</button>
+                    <button type="button" class="btn btn-outline-success coa-filter-btn" onclick="filterCOAs('lab')">Lab</button>
+                </div>
+            </div>
+
+            <!-- COA Table -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Lot ID</th>
+                            <th>COA Link</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Date Added</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coaTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 

@@ -7,10 +7,12 @@ let lots = JSON.parse(localStorage.getItem('lots')) || [];
 let processes = JSON.parse(localStorage.getItem('processes')) || [];
 let shipments = JSON.parse(localStorage.getItem('shipments')) || [];
 let chainOfCustody = JSON.parse(localStorage.getItem('chainOfCustody')) || [];
+let coas = JSON.parse(localStorage.getItem('coas')) || [];
 
 // Current state
 let selectedCategory = '';
 let currentInventoryFilter = 'all';
+let currentCOAFilter = 'all';
 
 // ========================================
 // Navigation Functions
@@ -40,6 +42,8 @@ function showSection(sectionId) {
         updateInventoryView();
     } else if (sectionId === 'reports') {
         updateReportsSection();
+    } else if (sectionId === 'coaManagement') {
+        updateCOASection();
     }
 }
 
@@ -115,6 +119,41 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('✓ Intake recorded successfully!');
             intakeForm.reset();
             document.getElementById('intakeFormSection').style.display = 'none';
+        });
+    }
+});
+
+// Handle COA form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const coaForm = document.getElementById('coaForm');
+    if (coaForm) {
+        coaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const coa = {
+                id: 'COA-' + Date.now(),
+                lotId: document.getElementById('coaLotId').value,
+                url: document.getElementById('coaUrl').value,
+                status: document.getElementById('coaStatus').value,
+                notes: document.getElementById('coaNotes').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            if (!coa.lotId) {
+                alert('Error: Please select a lot ID.');
+                return;
+            }
+            
+            coas.push(coa);
+            
+            // Add to chain of custody
+            addToChainOfCustody(coa.lotId, 'coa', `COA ${coa.status} - ${coa.url ? 'Link added' : 'No link'}`, coa);
+            
+            saveData();
+            updateCOATable();
+            
+            alert('✓ COA record added successfully!');
+            coaForm.reset();
         });
     }
 });
@@ -935,6 +974,18 @@ function viewLotDetails(lotId) {
     const lot = lots.find(l => l.id === lotId);
     if (!lot) return;
     
+    // Find COAs for this lot
+    const lotCOAs = coas.filter(coa => coa.lotId === lotId);
+    let coaInfo = '';
+    if (lotCOAs.length > 0) {
+        coaInfo = '\n\nCOAs:\n';
+        lotCOAs.forEach((coa, index) => {
+            coaInfo += `  ${index + 1}. Status: ${coa.status}${coa.url ? ', Link: ' + coa.url : ''}\n`;
+        });
+    } else {
+        coaInfo = '\n\nCOAs: None';
+    }
+    
     let details = `
 LOT DETAILS
 ===========
@@ -947,7 +998,7 @@ Date: ${lot.date}
 Vendor: ${lot.vendor}
 Product Type: ${lot.productType || 'N/A'}
 Cannabinoid Profile: ${lot.cannabinoidProfile || 'N/A'}
-Notes: ${lot.notes || 'N/A'}
+Notes: ${lot.notes || 'N/A'}${coaInfo}
 `;
     
     alert(details);
@@ -973,8 +1024,9 @@ function exportAllData() {
         processes,
         shipments,
         chainOfCustody,
+        coas,
         exportDate: new Date().toISOString(),
-        version: '1.0'
+        version: '1.1'
     };
     
     const json = JSON.stringify(data, null, 2);
@@ -987,6 +1039,65 @@ function exportAllData() {
     URL.revokeObjectURL(url);
     
     alert('✓ Data exported successfully!');
+}
+
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                
+                // Validate the imported data
+                if (!importedData.lots || !Array.isArray(importedData.lots)) {
+                    throw new Error('Invalid data format: lots array missing');
+                }
+                
+                // Merge data (you can customize this behavior)
+                const confirmMsg = 'This will merge imported data with existing data. Continue?';
+                if (!confirm(confirmMsg)) {
+                    return;
+                }
+                
+                // Merge arrays, avoiding duplicates by ID
+                if (importedData.lots) lots = mergByIdField(lots, importedData.lots);
+                if (importedData.processes) processes = mergByIdField(processes, importedData.processes);
+                if (importedData.shipments) shipments = mergByIdField(shipments, importedData.shipments);
+                if (importedData.chainOfCustody) chainOfCustody = mergByIdField(chainOfCustody, importedData.chainOfCustody);
+                if (importedData.coas) coas = mergByIdField(coas, importedData.coas);
+                
+                saveData();
+                alert('✓ Data imported successfully!');
+                
+                // Refresh the current view
+                showSection('dashboard');
+            } catch (error) {
+                alert('✗ Error importing data: ' + error.message);
+                console.error(error);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function mergByIdField(existing, imported) {
+    const merged = [...existing];
+    const existingIds = new Set(existing.map(item => item.id));
+    
+    imported.forEach(item => {
+        if (!existingIds.has(item.id)) {
+            merged.push(item);
+        }
+    });
+    
+    return merged;
 }
 
 function generateSummaryReport() {
@@ -1092,6 +1203,98 @@ function addToChainOfCustody(lotId, action, description, data) {
 }
 
 // ========================================
+// COA Management Functions
+// ========================================
+
+function updateCOASection() {
+    updateCOALotDropdown();
+    updateCOATable();
+}
+
+function updateCOALotDropdown() {
+    const select = document.getElementById('coaLotId');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">-- Select a lot --</option>';
+    lots.forEach(lot => {
+        select.innerHTML += `<option value="${lot.id}">${lot.id} - ${lot.category}</option>`;
+    });
+}
+
+function updateCOATable() {
+    const tbody = document.getElementById('coaTable');
+    if (!tbody) return;
+    
+    let filteredCOAs = coas;
+    if (currentCOAFilter !== 'all') {
+        filteredCOAs = coas.filter(coa => coa.status === currentCOAFilter);
+    }
+    
+    tbody.innerHTML = '';
+    
+    if (filteredCOAs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No COA records found</td></tr>';
+        return;
+    }
+    
+    filteredCOAs.forEach(coa => {
+        const row = `
+            <tr>
+                <td>${coa.lotId}</td>
+                <td>
+                    ${coa.url ? `<a href="${coa.url}" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-link-45deg"></i> View COA
+                    </a>` : '<span class="text-muted">No URL</span>'}
+                </td>
+                <td>
+                    <span class="badge bg-${getStatusColor(coa.status)}">${coa.status}</span>
+                </td>
+                <td>${coa.notes || 'N/A'}</td>
+                <td>${new Date(coa.timestamp).toLocaleString()}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCOA('${coa.id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'pending': 'warning',
+        'in-house': 'info',
+        'lab': 'success'
+    };
+    return colors[status] || 'secondary';
+}
+
+function filterCOAs(status) {
+    currentCOAFilter = status;
+    
+    // Update active button state
+    document.querySelectorAll('.coa-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    updateCOATable();
+}
+
+function deleteCOA(coaId) {
+    if (!confirm('Are you sure you want to delete this COA record?')) {
+        return;
+    }
+    
+    coas = coas.filter(coa => coa.id !== coaId);
+    saveData();
+    updateCOATable();
+    alert('✓ COA record deleted successfully!');
+}
+
+// ========================================
 // Data Persistence
 // ========================================
 
@@ -1100,6 +1303,7 @@ function saveData() {
     localStorage.setItem('processes', JSON.stringify(processes));
     localStorage.setItem('shipments', JSON.stringify(shipments));
     localStorage.setItem('chainOfCustody', JSON.stringify(chainOfCustody));
+    localStorage.setItem('coas', JSON.stringify(coas));
 }
 
 // ========================================
