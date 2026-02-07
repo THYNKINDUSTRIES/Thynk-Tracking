@@ -979,7 +979,7 @@ function updateTestingTable() {
     
     tbody.innerHTML = '';
     
-    testingRecords.reverse().slice(0, 20).forEach(testing => {
+    testingRecords.slice().reverse().slice(0, 20).forEach(testing => {
         tbody.innerHTML += `
             <tr>
                 <td>${testing.lotId}</td>
@@ -1111,7 +1111,7 @@ function exportMasterLedgerCSV() {
         'Product Type', 'Product / SKU', 'Lot Identifier', 'UOM', 'Qty', 'Price / UOM', 'Extended Total',
         'Payment Status', 'State Check (PASS/FAIL/CONFIRM)', 'Checked By', 'Checked Date',
         'Thynk Brain™ Consulted (Y/N)', 'Thynk Brain™ Reference / Notes',
-        'Routing (Standard vs Depot)', 'UPS WebGate Shipment ID', 'Tracking #', 'Ship Date',
+        'Routing (Standard vs Depot)', 'Carrier', 'UPS WebGate Shipment ID', 'Tracking #', 'Ship Date',
         'COA Link', 'COA Match Verified (Y/N)', 'Packet Complete (Y/N)',
         'Carrier Attention Letter Included (Y/N)', 'License Copy Included (Y/N)',
         'Count Verified (Y/N)', 'Final Sign-Off', 'Archive Folder Link', 'Notes / Exception Flag'
@@ -1149,6 +1149,7 @@ function exportMasterLedgerCSV() {
             escapeCSV(lot.thynkBrainConsulted || ''),
             escapeCSV(lot.thynkBrainNotes || ''),
             escapeCSV(shipment?.routing || ''),
+            escapeCSV(shipment?.carrier || ''),
             escapeCSV(shipment?.upsWebGateId || ''),
             escapeCSV(shipment?.tracking || ''),
             escapeCSV(shipment?.date || ''),
@@ -1195,7 +1196,7 @@ function importMasterLedgerCSV(event) {
         try {
             const csv = e.target.result;
             const lines = csv.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
+            const headers = parseCSVLine(lines[0]);
             
             let importedCount = 0;
             
@@ -1211,7 +1212,7 @@ function importMasterLedgerCSV(event) {
                 });
                 
                 // Create or update lot
-                const lotId = row['Lot Identifier'] || `LOT-${Date.now()}-${i}`;
+                const lotId = row['Lot Identifier'] || `LOT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                 let lot = lots.find(l => l.id === lotId);
                 
                 if (!lot) {
@@ -1248,13 +1249,13 @@ function importMasterLedgerCSV(event) {
                 
                 // Create shipment if ship data exists
                 if (row['Ship Date'] || row['Tracking #']) {
-                    const existingShipment = shipments.find(s => s.lotId === lotId && s.date === row['Ship Date']);
+                    const existingShipment = shipments.find(s => s.lotId === lotId && s.date === row['Ship Date'] && s.tracking === row['Tracking #']);
                     if (!existingShipment) {
                         const shipment = {
                             lotId: lotId,
                             date: row['Ship Date'],
                             tracking: row['Tracking #'],
-                            carrier: 'Imported',
+                            carrier: row['Carrier'] || '',
                             shipToName: row['Ship-To Name'],
                             shipToAddress: row['Ship-To Address'],
                             shipToCity: row['Ship-To City'],
