@@ -1060,7 +1060,10 @@ function importData() {
                 }
                 
                 // Merge data (you can customize this behavior)
-                const confirmMsg = 'This will merge imported data with existing data. Continue?';
+                const confirmMsg = 'This will merge imported data with existing data.\n\n' +
+                    'Records with matching IDs will be skipped (existing records preserved).\n' +
+                    'Only new records will be added.\n\n' +
+                    'Continue?';
                 if (!confirm(confirmMsg)) {
                     return;
                 }
