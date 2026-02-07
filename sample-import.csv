@@ -1,0 +1,4 @@
+Lot Identifier,Product Type,Qty,UOM,Customer,Invoice #,Invoice Date,Vendor,Cannabinoid Profile,Notes
+BATCH-001,Flower,100,lbs,ABC Company,INV-2024-001,2024-01-15,Green Farms,THC 18% CBD 2%,Premium outdoor harvest
+LOT-2024-002,Extract,50,kg,XYZ Corp,INV-2024-002,2024-01-16,Mountain Extracts,THC 85% CBD 5%,High quality distillate
+SAMPLE-003,Isolate,25,lbs,Test Labs,INV-2024-003,2024-01-17,Pure Labs,THC 99.9%,Crystalline isolate
