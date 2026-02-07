@@ -4,9 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hemp Traceability System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
     <style>
+        /* Icon replacements using Unicode and text */
+        .bi-leaf::before { content: "🌿 "; }
+        .bi-box-seam::before { content: "📦 "; }
+        .bi-box-arrow-in-down::before { content: "📥 "; }
+        .bi-scissors::before { content: "✂️ "; }
+        .bi-gear::before { content: "⚙️ "; }
+        .bi-truck::before { content: "🚚 "; }
+        .bi-grid-3x3::before { content: "📊 "; }
+        .bi-file-earmark-text::before { content: "📄 "; }
+        .bi-plus-circle::before { content: "+ "; }
+        .bi-inbox::before { content: "📭 "; }
+        .bi-diagram-3::before { content: "🔀 "; }
+        .bi-moisture::before { content: "💨 "; }
+        .bi-star::before { content: "⭐ "; }
+        .bi-pen::before { content: "✏️ "; }
+        .bi-flower1::before { content: "🌸 "; }
+        .bi-cup-straw::before { content: "🥤 "; }
+        .bi-send::before { content: "📤 "; }
+        .bi-download::before { content: "⬇️ "; }
+        .bi-shield-check::before { content: "🛡️ "; }
+        .bi-upload::before { content: "⬆️ "; }
+        .bi-info-circle::before { content: "ℹ️ "; }
+        .bi-arrow-right::before { content: "→ "; }
+        .bi-arrow-left::before { content: "← "; }
+        .bi-check-circle::before { content: "✓ "; }
+        .bi-arrow-repeat::before { content: "🔄 "; }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -703,7 +728,7 @@
     <!-- Import Data Modal -->
     <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/bootstrap-lite.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
