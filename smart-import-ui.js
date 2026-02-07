@@ -26,14 +26,14 @@ class SmartImportUI {
      */
     createImportModal() {
         const modalHTML = `
-            <div class="modal fade" id="smartImportModal" tabindex="-1">
+            <div class="modal fade" id="smartImportModal" tabindex="-1" style="display: none;">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
                             <h5 class="modal-title">
                                 <i class="bi bi-cloud-upload"></i> Smart Data Import
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close btn-close-white" onclick="window.smartImportUI.close()"></button>
                         </div>
                         <div class="modal-body">
                             <!-- Step 1: File Upload -->
@@ -113,7 +113,7 @@ class SmartImportUI {
                             <div id="importStep3" class="import-step d-none">
                                 <h6 class="mb-3">Step 3: Import Results</h6>
                                 <div id="importResults"></div>
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                                <button type="button" class="btn btn-primary" onclick="window.smartImportUI.close()">
                                     Close
                                 </button>
                             </div>
@@ -179,9 +179,39 @@ class SmartImportUI {
      * Open the import modal
      */
     open() {
-        const modal = new bootstrap.Modal(document.getElementById('smartImportModal'));
-        modal.show();
-        this.showStep(1);
+        const modal = document.getElementById('smartImportModal');
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+            
+            // Add backdrop
+            if (!document.querySelector('.modal-backdrop')) {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+            
+            this.showStep(1);
+        }
+    }
+
+    /**
+     * Close the import modal
+     */
+    close() {
+        const modal = document.getElementById('smartImportModal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            
+            // Remove backdrop
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }
     }
 
     /**
