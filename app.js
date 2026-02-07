@@ -13,7 +13,7 @@ let currentIntakeStep = 1;
 
 // Generate unique ID
 function generateId(prefix) {
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 // Save all data to localStorage
