@@ -3,6 +3,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from flask_cors import CORS
 import os
+import json
 from werkzeug.utils import secure_filename
 from smart_import import SmartImporter, analyze_import_file
 
@@ -142,7 +143,10 @@ def execute_import():
         # Get parameters
         data_type = request.form.get('data_type', 'lots')
         user_mapping_json = request.form.get('mapping', '{}')
-        user_mapping = eval(user_mapping_json) if user_mapping_json else {}
+        try:
+            user_mapping = json.loads(user_mapping_json) if user_mapping_json else {}
+        except json.JSONDecodeError:
+            user_mapping = {}
         
         # Execute import
         importer = SmartImporter(data_type)

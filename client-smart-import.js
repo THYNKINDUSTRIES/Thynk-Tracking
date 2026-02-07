@@ -255,7 +255,9 @@ class ClientSmartImport {
                         const parsed = JSON.parse(e.target.result);
                         data = Array.isArray(parsed) ? parsed : [parsed];
                     } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-                        reject(new Error('Excel files require backend processing. Please convert to CSV first.'));
+                        // Note: Excel files are supported via backend API
+                        // For client-side only mode, user should convert to CSV first
+                        reject(new Error('Excel files are not supported in client-side mode. Please use the backend API or convert to CSV first.'));
                         return;
                     } else {
                         reject(new Error('Unsupported file format'));

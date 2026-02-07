@@ -97,10 +97,10 @@ class SmartImporter:
                 # Try different encodings and delimiters
                 try:
                     df = pd.read_csv(file_path)
-                except:
+                except UnicodeDecodeError:
                     try:
                         df = pd.read_csv(file_path, encoding='latin-1')
-                    except:
+                    except Exception:
                         df = pd.read_csv(file_path, delimiter=';')
             elif file_extension in ['xlsx', 'xls']:
                 df = pd.read_excel(file_path, engine='openpyxl' if file_extension == 'xlsx' else None)
@@ -217,10 +217,20 @@ class SmartImporter:
                     continue
                 
                 # Convert to appropriate type
-                if isinstance(value, (int, float)):
-                    record[target_field] = float(value) if '.' in str(value) else int(value)
+                if isinstance(value, (int, float, pd.Int64Dtype, pd.Float64Dtype)):
+                    # Already numeric, keep as is
+                    record[target_field] = float(value) if isinstance(value, float) else int(value)
                 else:
-                    record[target_field] = str(value).strip()
+                    # Try to convert string to number if it looks numeric
+                    str_value = str(value).strip()
+                    try:
+                        if '.' in str_value:
+                            record[target_field] = float(str_value)
+                        else:
+                            record[target_field] = int(str_value)
+                    except (ValueError, TypeError):
+                        # Not a number, keep as string
+                        record[target_field] = str_value
             
             # Add default values for required fields if missing
             if self.data_type == 'lots':
