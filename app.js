@@ -155,6 +155,13 @@ function toLbs(amount, unit) {
     return amount;
 }
 
+// Generate unique ID with prefix
+function generateUniqueId(prefix) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).slice(2, 11);
+    return `${prefix}_${timestamp}_${random}`;
+}
+
 // Update UI for simple form
 function updateUI() {
     // Update intake table
@@ -529,7 +536,7 @@ function submitSubdivide() {
     
     // Record process
     const processRecord = {
-        id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+        id: generateUniqueId("process"),
         type: 'subdivide',
         parentLot: parentLotId,
         childLots: JSON.stringify(childLots.map(c => c.id)),
@@ -712,7 +719,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Record process
             const processRecord = {
-                id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+                id: generateUniqueId("process"),
                 type: 'snowcapping',
                 inputs: JSON.stringify([
                     { lotId: flowerLotId, quantity: flowerQty },
@@ -814,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Record process
             const processRecord = {
-                id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+                id: generateUniqueId("process"),
                 type: 'blending',
                 inputs: JSON.stringify(sources),
                 outputs: outputLotId,
@@ -899,7 +906,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Record process
             const processRecord = {
-                id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+                id: generateUniqueId("process"),
                 type: 'conversion',
                 inputs: JSON.stringify([{ lotId: sourceLotId, quantity: sourceQty }]),
                 outputs: outputLotId,
@@ -1135,7 +1142,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Record testing/verification
             const testing = {
-                id: `test_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+                id: generateUniqueId("test"),
                 lotId,
                 stateCheck: document.getElementById('testingStateCheck').value,
                 checkedBy: document.getElementById('testingCheckedBy').value,
@@ -1405,7 +1412,7 @@ function importMasterLedgerCSV(event) {
                 });
                 
                 // Create or update lot
-                const lotId = row['Lot Identifier'] || `LOT-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+                const lotId = row['Lot Identifier'] || generateUniqueId("LOT");
                 let lot = lots.find(l => l.id === lotId);
                 
                 if (!lot) {
@@ -1744,11 +1751,16 @@ function addToChainOfCustody(lotId, action, description, data) {
         detailsStr = JSON.stringify(data || {});
     } catch (e) {
         console.error('Failed to stringify chain of custody data:', e);
-        detailsStr = JSON.stringify({ error: 'Failed to serialize data' });
+        detailsStr = JSON.stringify({ 
+            error: 'Failed to serialize data', 
+            errorMessage: e.message,
+            action: action,
+            lotId: lotId 
+        });
     }
     
     const cocEntry = {
-        id: `coc_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+        id: generateUniqueId("coc"),
         lotId,
         action,
         description,
