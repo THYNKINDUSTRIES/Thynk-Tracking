@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from flask_cors import CORS
 import os
 import json
@@ -20,16 +20,23 @@ CORS(app, origins=ALLOWED_ORIGINS)
 def get_credentials():
     """Get Google Sheets credentials from environment or file"""
     try:
+        # Define the scopes
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ]
+        
         # Try to load from environment variable (for production)
         creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
         if creds_json:
             creds_dict = json.loads(creds_json)
-            scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-            return ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+            return Credentials.from_service_account_info(creds_dict, scopes=scopes)
         
         # Fallback to file (for local development)
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        return ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
+        if os.path.exists("service_account.json"):
+            return Credentials.from_service_account_file("service_account.json", scopes=scopes)
+        
+        raise FileNotFoundError("No credentials found. Set GOOGLE_CREDENTIALS_JSON or provide service_account.json")
     except Exception as e:
         logger.error(f"Error loading credentials: {e}")
         raise
