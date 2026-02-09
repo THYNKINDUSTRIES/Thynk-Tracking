@@ -11,31 +11,179 @@ Hemp Traceability System
    - Enable the Google Sheets API
    - Create a Service Account: IAM & Admin > Service Accounts > Create Service Account
    - Generate a JSON key and download as `service_account.json`
-   - Create a Google Sheet and share it with the service account email
-   - Copy the Sheet ID from the URL and update `sheet_id` in `app.py`
-   - Create worksheets: Lots, Processes, Shipments, ChainOfCustody, TestingRecords
+   - Create a Google Sheet and share it with the service account email (found in the JSON)
+   - Copy the Sheet ID from the URL: `https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit`
+   - The backend will automatically create required worksheets: Lots, Processes, Shipments, ChainOfCustody, TestingRecords
 
 2. **Install Backend Dependencies**:
-   ```
+   ```bash
    pip install -r requirements.txt
    ```
 
-3. **Run Backend Locally**:
+3. **Configure Environment Variables**:
+   
+   For **local development**, create a `.env` file:
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your GOOGLE_SHEET_ID
    ```
+   
+   For **production deployment**, set these environment variables:
+   - `GOOGLE_SHEET_ID`: Your Google Sheet ID
+   - `GOOGLE_CREDENTIALS_JSON`: The entire service account JSON as a string
+   - `ALLOWED_ORIGINS`: Comma-separated list of allowed frontend URLs (e.g., `https://yourdomain.com,https://www.yourdomain.com`)
+
+4. **Initialize Worksheets**:
+   ```bash
+   # Start the backend
    python app.py
+   
+   # In another terminal, initialize worksheets
+   curl -X POST http://localhost:5000/api/init
    ```
 
-4. **Deploy Backend**:
-   - Use Heroku, Railway, or Render
-   - Push the code to a Git repo
-   - Set up the service account key as an environment variable or file
+5. **Run Backend Locally**:
+   ```bash
+   python app.py
+   # Backend will run on http://localhost:5000
+   ```
+
+6. **Deploy Backend**:
+   
+   **Option A: Heroku**
+   ```bash
+   # Install Heroku CLI
+   heroku login
+   heroku create your-app-name
+   
+   # Set environment variables
+   heroku config:set GOOGLE_SHEET_ID="your_sheet_id"
+   heroku config:set GOOGLE_CREDENTIALS_JSON='{"type":"service_account",...}'
+   heroku config:set ALLOWED_ORIGINS="https://your-frontend.netlify.app"
+   
+   # Deploy
+   git push heroku main
+   
+   # Initialize worksheets
+   curl -X POST https://your-app-name.herokuapp.com/api/init
+   ```
+   
+   **Option B: Railway**
+   ```bash
+   # Install Railway CLI
+   npm install -g @railway/cli
+   railway login
+   railway init
+   
+   # Set environment variables in Railway dashboard
+   # Deploy
+   railway up
+   ```
+   
+   **Option C: Render**
+   - Connect your GitHub repository
+   - Set environment variables in Render dashboard
+   - Deploy automatically on push
+
+7. **Verify Backend Health**:
+   ```bash
+   # Check if backend is running
+   curl https://your-backend-url/api/health
+   ```
 
 ### Frontend Deployment
 
-1. **Deploy to Netlify/Vercel**:
-   - Upload the `index.html`, `app.js`, `style.css` files
-   - Or connect the GitHub repo
-   - Update API calls in `app.js` to point to the backend URL (e.g., change `/api/` to `https://your-backend-url/api/`)
+1. **Update API Configuration**:
+   
+   The frontend automatically detects the environment:
+   - **Local development**: Uses `http://localhost:5000` when running on localhost
+   - **Production**: Uses same origin (relative URLs) when deployed
+   
+   If you need to use a different backend URL in production, modify `app.js`:
+   ```javascript
+   const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+       ? 'http://localhost:5000'  // Local development
+       : 'https://your-backend-url.com';  // Production - UPDATE THIS
+   ```
+
+2. **Deploy to Netlify**:
+   ```bash
+   # Option 1: Drag and drop
+   # Upload index.html, app.js, style.css to Netlify
+   
+   # Option 2: Connect GitHub
+   # Connect your repository to Netlify
+   # Build command: (leave empty)
+   # Publish directory: /
+   ```
+
+3. **Deploy to Vercel**:
+   ```bash
+   # Install Vercel CLI
+   npm install -g vercel
+   
+   # Deploy
+   vercel
+   # Follow prompts
+   ```
+
+4. **Deploy to GitHub Pages**:
+   ```bash
+   # Enable GitHub Pages in repository settings
+   # Choose branch: main
+   # Folder: / (root)
+   ```
+
+### Data Migration
+
+1. **Migrate localStorage to Backend**:
+   - Open the app in your browser
+   - Click "Migrate to Backend" button in the Data Management section
+   - Confirm the migration
+   - All localStorage data will be transferred to Google Sheets
+
+2. **Import from JSON**:
+   - Click "Choose File" under Import Data
+   - Select a previously exported JSON file
+   - Data will be imported to both localStorage and backend (if available)
+
+3. **Export Data**:
+   - Click "Export All Data (JSON)" to download all data
+   - Use this for backups or transferring between systems
+
+### Production Checklist
+
+- [ ] Google Sheets API enabled
+- [ ] Service account created and JSON key downloaded
+- [ ] Google Sheet created and shared with service account
+- [ ] Backend deployed with environment variables configured
+- [ ] Worksheets initialized (`POST /api/init`)
+- [ ] Backend health check passing (`GET /api/health`)
+- [ ] Frontend deployed
+- [ ] Frontend API URL updated (if using separate backend)
+- [ ] CORS configured for production domain
+- [ ] Data migration completed (if migrating from localStorage)
+- [ ] Test all CRUD operations
+- [ ] Verify data persistence in Google Sheets
+
+### Troubleshooting
+
+**Backend Issues:**
+- Check backend logs for errors
+- Verify service account has edit access to the sheet
+- Ensure all environment variables are set correctly
+- Test API endpoints with curl or Postman
+
+**Frontend Issues:**
+- Open browser console to check for errors
+- Verify backend URL is correct
+- Check CORS settings if seeing CORS errors
+- Ensure backend is running and accessible
+
+**Data Migration:**
+- Export data before migration as backup
+- Verify backend is online before migrating
+- Check browser console for migration errors
 
 ## Features
 

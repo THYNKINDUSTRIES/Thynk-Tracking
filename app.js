@@ -2,6 +2,15 @@
 // Hemp Traceability System - Main App Logic
 // ========================================
 
+// Configuration
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'  // Local development
+    : '';  // Production - same origin
+
+// Backend status
+let backendAvailable = false;
+let backendStatus = 'checking';
+
 // Data structures
 let lots = [];
 let processes = [];
@@ -9,36 +18,132 @@ let shipments = [];
 let chainOfCustody = [];
 let testingRecords = [];
 
-// Load data from backend
-async function loadData() {
+// Check backend health
+async function checkBackendHealth() {
     try {
-        const [lotsRes, processesRes, shipmentsRes, cocRes, testingRes] = await Promise.all([
-            fetch('/api/lots'),
-            fetch('/api/processes'),
-            fetch('/api/shipments'),
-            fetch('/api/chainOfCustody'),
-            fetch('/api/testingRecords')
-        ]);
-        lots = await lotsRes.json();
-        processes = await processesRes.json();
-        shipments = await shipmentsRes.json();
-        chainOfCustody = await cocRes.json();
-        testingRecords = await testingRes.json();
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+            backendAvailable = true;
+            backendStatus = 'online';
+            updateBackendStatusUI('online');
+            return true;
+        }
     } catch (error) {
-        console.error('Error loading data:', error);
+        console.warn('Backend not available, using localStorage fallback:', error);
+    }
+    
+    backendAvailable = false;
+    backendStatus = 'offline';
+    updateBackendStatusUI('offline');
+    return false;
+}
+
+// Update backend status UI
+function updateBackendStatusUI(status) {
+    const statusElement = document.getElementById('backendStatus');
+    if (statusElement) {
+        if (status === 'online') {
+            statusElement.innerHTML = '<span class="badge bg-success">Backend Connected</span>';
+        } else if (status === 'offline') {
+            statusElement.innerHTML = '<span class="badge bg-warning">Offline Mode (localStorage)</span>';
+        } else {
+            statusElement.innerHTML = '<span class="badge bg-secondary">Checking...</span>';
+        }
     }
 }
 
-// Save data to backend
-async function saveData(type, data) {
+// Load data from backend or localStorage
+async function loadData() {
     try {
-        await fetch(`/api/${type}`, {
+        // First check backend health
+        await checkBackendHealth();
+        
+        if (backendAvailable) {
+            // Load from backend
+            const [lotsRes, processesRes, shipmentsRes, cocRes, testingRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/lots`),
+                fetch(`${API_BASE_URL}/api/processes`),
+                fetch(`${API_BASE_URL}/api/shipments`),
+                fetch(`${API_BASE_URL}/api/chainOfCustody`),
+                fetch(`${API_BASE_URL}/api/testingRecords`)
+            ]);
+            
+            lots = await lotsRes.json();
+            processes = await processesRes.json();
+            shipments = await shipmentsRes.json();
+            chainOfCustody = await cocRes.json();
+            testingRecords = await testingRes.json();
+            
+            console.log('Data loaded from backend');
+        } else {
+            // Fallback to localStorage
+            loadFromLocalStorage();
+            console.log('Data loaded from localStorage');
+        }
+    } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback to localStorage on error
+        loadFromLocalStorage();
+    }
+}
+
+// Load from localStorage (fallback)
+function loadFromLocalStorage() {
+    lots = JSON.parse(localStorage.getItem('lots') || '[]');
+    processes = JSON.parse(localStorage.getItem('processes') || '[]');
+    shipments = JSON.parse(localStorage.getItem('shipments') || '[]');
+    chainOfCustody = JSON.parse(localStorage.getItem('chainOfCustody') || '[]');
+    testingRecords = JSON.parse(localStorage.getItem('testingRecords') || '[]');
+}
+
+// Save to localStorage (fallback)
+function saveToLocalStorage() {
+    localStorage.setItem('lots', JSON.stringify(lots));
+    localStorage.setItem('processes', JSON.stringify(processes));
+    localStorage.setItem('shipments', JSON.stringify(shipments));
+    localStorage.setItem('chainOfCustody', JSON.stringify(chainOfCustody));
+    localStorage.setItem('testingRecords', JSON.stringify(testingRecords));
+}
+
+// Save individual item to backend
+async function saveToBackend(type, data) {
+    if (!backendAvailable) {
+        console.log('Backend not available, data saved to localStorage only');
+        return false;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/${type}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
+        
+        if (!response.ok) {
+            throw new Error(`Backend error: ${response.status}`);
+        }
+        
+        return true;
     } catch (error) {
-        console.error('Error saving data:', error);
+        console.error(`Error saving to backend (${type}):`, error);
+        return false;
+    }
+}
+
+// Main save function - saves to backend and localStorage
+async function saveData() {
+    // Always save to localStorage as backup
+    saveToLocalStorage();
+    
+    // Try to save to backend if available
+    if (backendAvailable) {
+        console.log('Data saved to backend and localStorage');
+    } else {
+        console.log('Data saved to localStorage (backend offline)');
     }
 }
 
@@ -48,6 +153,13 @@ function toLbs(amount, unit) {
         return amount * 2.20462;
     }
     return amount;
+}
+
+// Generate unique ID with prefix
+function generateUniqueId(prefix) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).slice(2, 11);
+    return `${prefix}_${timestamp}_${random}`;
 }
 
 // Update UI for simple form
@@ -193,6 +305,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add to chain of custody
             addToChainOfCustody(lot.id, 'intake', `Received from ${lot.vendor}`, lot);
             
+            // Save to backend and localStorage (fire-and-forget for backend)
+            saveToBackend('lots', lot).catch(err => console.error('Backend save failed:', err));
             saveData();
             updateIntakeTable();
             
@@ -406,6 +520,7 @@ function submitSubdivide() {
         };
         
         lots.push(childLot);
+        saveToBackend('lots', childLot).catch(err => console.error('Backend save failed:', err));
         addToChainOfCustody(childLot.id, 'subdivided', `Created from parent lot ${parentLotId}`, childLot);
     });
     
@@ -420,14 +535,17 @@ function submitSubdivide() {
     });
     
     // Record process
-    processes.push({
+    const processRecord = {
+        id: generateUniqueId("process"),
         type: 'subdivide',
         parentLot: parentLotId,
-        childLots: childLots.map(c => c.id),
+        childLots: JSON.stringify(childLots.map(c => c.id)),
         date: new Date().toISOString().split('T')[0],
         totalQuantity,
         timestamp: new Date().toISOString()
-    });
+    };
+    processes.push(processRecord);
+    saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
     
     saveData();
     
@@ -597,19 +715,23 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             lots.push(outputLot);
+            saveToBackend('lots', outputLot).catch(err => console.error('Backend save failed:', err));
             
             // Record process
-            processes.push({
+            const processRecord = {
+                id: generateUniqueId("process"),
                 type: 'snowcapping',
-                inputs: [
+                inputs: JSON.stringify([
                     { lotId: flowerLotId, quantity: flowerQty },
                     { lotId: isolateLotId, quantity: isolateQty }
-                ],
-                output: outputLotId,
+                ]),
+                outputs: outputLotId,
                 date: document.getElementById('snowcapDate').value,
                 notes: document.getElementById('snowcapNotes').value,
                 timestamp: new Date().toISOString()
-            });
+            };
+            processes.push(processRecord);
+            saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(outputLotId, 'snowcapping', `Created by snowcapping ${flowerLotId} with ${isolateLotId}`, outputLot);
             addToChainOfCustody(flowerLotId, 'used', `Used ${flowerQty} ${flowerLot.unit} for snowcapping into ${outputLotId}`, {});
@@ -695,17 +817,20 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             lots.push(outputLot);
+            saveToBackend('lots', outputLot).catch(err => console.error('Backend save failed:', err));
             
             // Record process
-            processes.push({
+            const processRecord = {
+                id: generateUniqueId("process"),
                 type: 'blending',
-                inputs: sources,
-                output: outputLotId,
-                blendType,
+                inputs: JSON.stringify(sources),
+                outputs: outputLotId,
+                notes: `${blendType} - ${document.getElementById('blendNotes').value}`,
                 date: document.getElementById('blendDate').value,
-                notes: document.getElementById('blendNotes').value,
                 timestamp: new Date().toISOString()
-            });
+            };
+            processes.push(processRecord);
+            saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(outputLotId, 'blending', `Created by blending ${sources.length} extracts`, outputLot);
             
@@ -777,19 +902,20 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             lots.push(outputLot);
+            saveToBackend('lots', outputLot).catch(err => console.error('Backend save failed:', err));
             
             // Record process
-            processes.push({
+            const processRecord = {
+                id: generateUniqueId("process"),
                 type: 'conversion',
-                input: { lotId: sourceLotId, quantity: sourceQty },
-                output: outputLotId,
-                productType,
-                units,
-                unitSize,
+                inputs: JSON.stringify([{ lotId: sourceLotId, quantity: sourceQty }]),
+                outputs: outputLotId,
+                notes: `${productType} - ${units} units @ ${unitSize} - ${document.getElementById('conversionNotes').value}`,
                 date: document.getElementById('conversionDate').value,
-                notes: document.getElementById('conversionNotes').value,
                 timestamp: new Date().toISOString()
-            });
+            };
+            processes.push(processRecord);
+            saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(outputLotId, 'conversion', `Converted from ${sourceLotId} into ${units} units of ${productType}`, outputLot);
             addToChainOfCustody(sourceLotId, 'used', `Used ${sourceQty} ${sourceLot.unit} for conversion into ${outputLotId}`, {});
@@ -948,6 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             shipments.push(shipment);
+            saveToBackend('shipments', shipment).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(lotId, 'shipped', `Shipped ${qty} ${lot.unit} to ${recipient}`, shipment);
             
@@ -1015,6 +1142,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Record testing/verification
             const testing = {
+                id: generateUniqueId("test"),
                 lotId,
                 stateCheck: document.getElementById('testingStateCheck').value,
                 checkedBy: document.getElementById('testingCheckedBy').value,
@@ -1025,6 +1153,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             testingRecords.push(testing);
+            saveToBackend('testingRecords', testing).catch(err => console.error('Backend save failed:', err));
             
             // Update lot with testing info
             lot.stateCheck = testing.stateCheck;
@@ -1283,7 +1412,7 @@ function importMasterLedgerCSV(event) {
                 });
                 
                 // Create or update lot
-                const lotId = row['Lot Identifier'] || `LOT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                const lotId = row['Lot Identifier'] || generateUniqueId("LOT");
                 let lot = lots.find(l => l.id === lotId);
                 
                 if (!lot) {
@@ -1391,6 +1520,139 @@ function parseCSVLine(line) {
     return values;
 }
 
+// ========================================
+// Data Migration Functions
+// ========================================
+
+async function migrateLocalStorageToBackend() {
+    if (!backendAvailable) {
+        alert('Backend is not available. Please ensure the backend server is running.');
+        return;
+    }
+    
+    if (!confirm('This will migrate all data from localStorage to the backend. Continue?')) {
+        return;
+    }
+    
+    try {
+        // Load from localStorage
+        const localLots = JSON.parse(localStorage.getItem('lots') || '[]');
+        const localProcesses = JSON.parse(localStorage.getItem('processes') || '[]');
+        const localShipments = JSON.parse(localStorage.getItem('shipments') || '[]');
+        const localChainOfCustody = JSON.parse(localStorage.getItem('chainOfCustody') || '[]');
+        const localTestingRecords = JSON.parse(localStorage.getItem('testingRecords') || '[]');
+        
+        let totalMigrated = 0;
+        
+        // Migrate lots
+        for (const lot of localLots) {
+            await saveToBackend('lots', lot).catch(err => console.error('Backend save failed:', err));
+            totalMigrated++;
+        }
+        
+        // Migrate processes
+        for (const process of localProcesses) {
+            await saveToBackend('processes', process).catch(err => console.error('Backend save failed:', err));
+            totalMigrated++;
+        }
+        
+        // Migrate shipments
+        for (const shipment of localShipments) {
+            await saveToBackend('shipments', shipment).catch(err => console.error('Backend save failed:', err));
+            totalMigrated++;
+        }
+        
+        // Migrate chain of custody
+        for (const coc of localChainOfCustody) {
+            await saveToBackend('chainOfCustody', coc).catch(err => console.error('Backend save failed:', err));
+            totalMigrated++;
+        }
+        
+        // Migrate testing records
+        for (const testing of localTestingRecords) {
+            await saveToBackend('testingRecords', testing).catch(err => console.error('Backend save failed:', err));
+            totalMigrated++;
+        }
+        
+        alert(`✓ Successfully migrated ${totalMigrated} records to backend!`);
+        
+        // Reload data from backend
+        await loadData();
+        updateDashboard();
+        
+    } catch (error) {
+        console.error('Migration error:', error);
+        alert('Error during migration: ' + error.message);
+    }
+}
+
+function importJSONData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (!data.lots || !Array.isArray(data.lots)) {
+                throw new Error('Invalid JSON format - missing lots array');
+            }
+            
+            if (!confirm(`This will import ${data.lots.length} lots, ${data.processes?.length || 0} processes, and other data. Continue?`)) {
+                return;
+            }
+            
+            // Import to local arrays
+            if (data.lots) lots.push(...data.lots);
+            if (data.processes) processes.push(...data.processes);
+            if (data.shipments) shipments.push(...data.shipments);
+            if (data.chainOfCustody) chainOfCustody.push(...data.chainOfCustody);
+            if (data.testingRecords) testingRecords.push(...data.testingRecords);
+            
+            // Save to localStorage and backend
+            saveData();
+            
+            // If backend is available, also save to backend
+            if (backendAvailable) {
+                let totalSaved = 0;
+                for (const lot of data.lots || []) {
+                    await saveToBackend('lots', lot).catch(err => console.error('Backend save failed:', err));
+                    totalSaved++;
+                }
+                for (const process of data.processes || []) {
+                    await saveToBackend('processes', process).catch(err => console.error('Backend save failed:', err));
+                    totalSaved++;
+                }
+                for (const shipment of data.shipments || []) {
+                    await saveToBackend('shipments', shipment).catch(err => console.error('Backend save failed:', err));
+                    totalSaved++;
+                }
+                for (const coc of data.chainOfCustody || []) {
+                    await saveToBackend('chainOfCustody', coc).catch(err => console.error('Backend save failed:', err));
+                    totalSaved++;
+                }
+                for (const testing of data.testingRecords || []) {
+                    await saveToBackend('testingRecords', testing).catch(err => console.error('Backend save failed:', err));
+                    totalSaved++;
+                }
+                alert(`✓ Successfully imported and saved ${totalSaved} records!`);
+            } else {
+                alert('✓ Data imported to localStorage! Backend not available.');
+            }
+            
+            showSection('dashboard');
+            updateDashboard();
+            
+        } catch (error) {
+            console.error('Import error:', error);
+            alert('Error importing JSON: ' + error.message);
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
 function generateSummaryReport() {
     const activeLots = lots.filter(lot => lot.status === 'active');
     const depletedLots = lots.filter(lot => lot.status === 'depleted');
@@ -1484,29 +1746,40 @@ function showChainOfCustody() {
 // ========================================
 
 function addToChainOfCustody(lotId, action, description, data) {
-    chainOfCustody.push({
+    let detailsStr = '';
+    try {
+        detailsStr = JSON.stringify(data || {});
+    } catch (e) {
+        console.error('Failed to stringify chain of custody data:', e);
+        detailsStr = JSON.stringify({ 
+            error: 'Failed to serialize data', 
+            errorMessage: e.message,
+            action: action,
+            lotId: lotId 
+        });
+    }
+    
+    const cocEntry = {
+        id: generateUniqueId("coc"),
         lotId,
         action,
         description,
-        data,
+        details: detailsStr,
         timestamp: new Date().toISOString()
-    });
+    };
+    chainOfCustody.push(cocEntry);
+    
+    // Save to backend (fire-and-forget)
+    saveToBackend('chainOfCustody', cocEntry).catch(err => console.error('Backend save failed:', err));
 }
 
+
 // ========================================
-// Data Persistence
+// Data Persistence - Handled by functions at top of file
 // ========================================
 
-function saveData() {
-    localStorage.setItem('lots', JSON.stringify(lots));
-    localStorage.setItem('processes', JSON.stringify(processes));
-    localStorage.setItem('shipments', JSON.stringify(shipments));
-    localStorage.setItem('chainOfCustody', JSON.stringify(chainOfCustody));
-    localStorage.setItem('testingRecords', JSON.stringify(testingRecords));
-}
-
-// Add intake
-document.getElementById('intakeForm').addEventListener('submit', (e) => {
+// Add intake (old simple form - may not be used)
+document.getElementById('intakeForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const intake = {
         date: document.getElementById('intakeDate').value,
