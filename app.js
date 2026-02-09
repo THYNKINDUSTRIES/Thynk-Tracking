@@ -298,8 +298,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add to chain of custody
             addToChainOfCustody(lot.id, 'intake', `Received from ${lot.vendor}`, lot);
             
-            // Save to backend and localStorage
-            saveToBackend('lots', lot);
+            // Save to backend and localStorage (fire-and-forget for backend)
+            saveToBackend('lots', lot).catch(err => console.error('Backend save failed:', err));
             saveData();
             updateIntakeTable();
             
@@ -513,7 +513,7 @@ function submitSubdivide() {
         };
         
         lots.push(childLot);
-        saveToBackend('lots', childLot);
+        saveToBackend('lots', childLot).catch(err => console.error('Backend save failed:', err));
         addToChainOfCustody(childLot.id, 'subdivided', `Created from parent lot ${parentLotId}`, childLot);
     });
     
@@ -529,7 +529,7 @@ function submitSubdivide() {
     
     // Record process
     const processRecord = {
-        id: `process_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
         type: 'subdivide',
         parentLot: parentLotId,
         childLots: JSON.stringify(childLots.map(c => c.id)),
@@ -538,7 +538,7 @@ function submitSubdivide() {
         timestamp: new Date().toISOString()
     };
     processes.push(processRecord);
-    saveToBackend('processes', processRecord);
+    saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
     
     saveData();
     
@@ -708,11 +708,11 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             lots.push(outputLot);
-            saveToBackend('lots', outputLot);
+            saveToBackend('lots', outputLot).catch(err => console.error('Backend save failed:', err));
             
             // Record process
             const processRecord = {
-                id: `process_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
                 type: 'snowcapping',
                 inputs: JSON.stringify([
                     { lotId: flowerLotId, quantity: flowerQty },
@@ -724,7 +724,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 timestamp: new Date().toISOString()
             };
             processes.push(processRecord);
-            saveToBackend('processes', processRecord);
+            saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(outputLotId, 'snowcapping', `Created by snowcapping ${flowerLotId} with ${isolateLotId}`, outputLot);
             addToChainOfCustody(flowerLotId, 'used', `Used ${flowerQty} ${flowerLot.unit} for snowcapping into ${outputLotId}`, {});
@@ -810,11 +810,11 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             lots.push(outputLot);
-            saveToBackend('lots', outputLot);
+            saveToBackend('lots', outputLot).catch(err => console.error('Backend save failed:', err));
             
             // Record process
             const processRecord = {
-                id: `process_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
                 type: 'blending',
                 inputs: JSON.stringify(sources),
                 outputs: outputLotId,
@@ -823,7 +823,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 timestamp: new Date().toISOString()
             };
             processes.push(processRecord);
-            saveToBackend('processes', processRecord);
+            saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(outputLotId, 'blending', `Created by blending ${sources.length} extracts`, outputLot);
             
@@ -895,11 +895,11 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             lots.push(outputLot);
-            saveToBackend('lots', outputLot);
+            saveToBackend('lots', outputLot).catch(err => console.error('Backend save failed:', err));
             
             // Record process
             const processRecord = {
-                id: `process_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                id: `process_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
                 type: 'conversion',
                 inputs: JSON.stringify([{ lotId: sourceLotId, quantity: sourceQty }]),
                 outputs: outputLotId,
@@ -908,7 +908,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 timestamp: new Date().toISOString()
             };
             processes.push(processRecord);
-            saveToBackend('processes', processRecord);
+            saveToBackend('processes', processRecord).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(outputLotId, 'conversion', `Converted from ${sourceLotId} into ${units} units of ${productType}`, outputLot);
             addToChainOfCustody(sourceLotId, 'used', `Used ${sourceQty} ${sourceLot.unit} for conversion into ${outputLotId}`, {});
@@ -1067,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             shipments.push(shipment);
-            saveToBackend('shipments', shipment);
+            saveToBackend('shipments', shipment).catch(err => console.error('Backend save failed:', err));
             
             addToChainOfCustody(lotId, 'shipped', `Shipped ${qty} ${lot.unit} to ${recipient}`, shipment);
             
@@ -1135,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Record testing/verification
             const testing = {
-                id: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                id: `test_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
                 lotId,
                 stateCheck: document.getElementById('testingStateCheck').value,
                 checkedBy: document.getElementById('testingCheckedBy').value,
@@ -1146,7 +1146,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             testingRecords.push(testing);
-            saveToBackend('testingRecords', testing);
+            saveToBackend('testingRecords', testing).catch(err => console.error('Backend save failed:', err));
             
             // Update lot with testing info
             lot.stateCheck = testing.stateCheck;
@@ -1405,7 +1405,7 @@ function importMasterLedgerCSV(event) {
                 });
                 
                 // Create or update lot
-                const lotId = row['Lot Identifier'] || `LOT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                const lotId = row['Lot Identifier'] || `LOT-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
                 let lot = lots.find(l => l.id === lotId);
                 
                 if (!lot) {
@@ -1539,31 +1539,31 @@ async function migrateLocalStorageToBackend() {
         
         // Migrate lots
         for (const lot of localLots) {
-            await saveToBackend('lots', lot);
+            await saveToBackend('lots', lot).catch(err => console.error('Backend save failed:', err));
             totalMigrated++;
         }
         
         // Migrate processes
         for (const process of localProcesses) {
-            await saveToBackend('processes', process);
+            await saveToBackend('processes', process).catch(err => console.error('Backend save failed:', err));
             totalMigrated++;
         }
         
         // Migrate shipments
         for (const shipment of localShipments) {
-            await saveToBackend('shipments', shipment);
+            await saveToBackend('shipments', shipment).catch(err => console.error('Backend save failed:', err));
             totalMigrated++;
         }
         
         // Migrate chain of custody
         for (const coc of localChainOfCustody) {
-            await saveToBackend('chainOfCustody', coc);
+            await saveToBackend('chainOfCustody', coc).catch(err => console.error('Backend save failed:', err));
             totalMigrated++;
         }
         
         // Migrate testing records
         for (const testing of localTestingRecords) {
-            await saveToBackend('testingRecords', testing);
+            await saveToBackend('testingRecords', testing).catch(err => console.error('Backend save failed:', err));
             totalMigrated++;
         }
         
@@ -1610,23 +1610,23 @@ function importJSONData(event) {
             if (backendAvailable) {
                 let totalSaved = 0;
                 for (const lot of data.lots || []) {
-                    await saveToBackend('lots', lot);
+                    await saveToBackend('lots', lot).catch(err => console.error('Backend save failed:', err));
                     totalSaved++;
                 }
                 for (const process of data.processes || []) {
-                    await saveToBackend('processes', process);
+                    await saveToBackend('processes', process).catch(err => console.error('Backend save failed:', err));
                     totalSaved++;
                 }
                 for (const shipment of data.shipments || []) {
-                    await saveToBackend('shipments', shipment);
+                    await saveToBackend('shipments', shipment).catch(err => console.error('Backend save failed:', err));
                     totalSaved++;
                 }
                 for (const coc of data.chainOfCustody || []) {
-                    await saveToBackend('chainOfCustody', coc);
+                    await saveToBackend('chainOfCustody', coc).catch(err => console.error('Backend save failed:', err));
                     totalSaved++;
                 }
                 for (const testing of data.testingRecords || []) {
-                    await saveToBackend('testingRecords', testing);
+                    await saveToBackend('testingRecords', testing).catch(err => console.error('Backend save failed:', err));
                     totalSaved++;
                 }
                 alert(`✓ Successfully imported and saved ${totalSaved} records!`);
@@ -1739,18 +1739,26 @@ function showChainOfCustody() {
 // ========================================
 
 function addToChainOfCustody(lotId, action, description, data) {
+    let detailsStr = '';
+    try {
+        detailsStr = JSON.stringify(data || {});
+    } catch (e) {
+        console.error('Failed to stringify chain of custody data:', e);
+        detailsStr = JSON.stringify({ error: 'Failed to serialize data' });
+    }
+    
     const cocEntry = {
-        id: `coc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `coc_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
         lotId,
         action,
         description,
-        details: JSON.stringify(data),
+        details: detailsStr,
         timestamp: new Date().toISOString()
     };
     chainOfCustody.push(cocEntry);
     
-    // Save to backend
-    saveToBackend('chainOfCustody', cocEntry);
+    // Save to backend (fire-and-forget)
+    saveToBackend('chainOfCustody', cocEntry).catch(err => console.error('Backend save failed:', err));
 }
 
 

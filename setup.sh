@@ -30,7 +30,20 @@ fi
 # Activate virtual environment
 echo ""
 echo "Activating virtual environment..."
-source venv/bin/activate || . venv/Scripts/activate
+if [ -f "venv/bin/activate" ]; then
+    source venv/bin/activate
+elif [ -f "venv/Scripts/activate" ]; then
+    . venv/Scripts/activate
+else
+    echo "❌ Failed to find activation script"
+    exit 1
+fi
+
+# Verify activation by checking for pip in virtual environment
+if [ -z "$VIRTUAL_ENV" ]; then
+    echo "❌ Failed to activate virtual environment"
+    exit 1
+fi
 echo "✓ Virtual environment activated"
 
 # Install dependencies
