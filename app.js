@@ -9,75 +9,12 @@ let shipments = [];
 let chainOfCustody = [];
 let testingRecords = [];
 
-// Load data from backend
-async function loadData() {
-    try {
-        const [lotsRes, processesRes, shipmentsRes, cocRes, testingRes] = await Promise.all([
-            fetch('/api/lots'),
-            fetch('/api/processes'),
-            fetch('/api/shipments'),
-            fetch('/api/chainOfCustody'),
-            fetch('/api/testingRecords')
-        ]);
-        lots = await lotsRes.json();
-        processes = await processesRes.json();
-        shipments = await shipmentsRes.json();
-        chainOfCustody = await cocRes.json();
-        testingRecords = await testingRes.json();
-    } catch (error) {
-        console.error('Error loading data:', error);
-    }
-}
-
-// Save data to backend
-async function saveData(type, data) {
-    try {
-        await fetch(`/api/${type}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-    } catch (error) {
-        console.error('Error saving data:', error);
-    }
-}
-
 // Convert amount to lbs
 function toLbs(amount, unit) {
     if (unit === 'kg') {
         return amount * 2.20462;
     }
     return amount;
-}
-
-// Update UI for simple form
-function updateUI() {
-    // Update intake table
-    const intakeTable = document.getElementById('intakeTable').querySelector('tbody');
-    intakeTable.innerHTML = '';
-    intakes.forEach(item => {
-        intakeTable.innerHTML += `<tr><td>${item.date}</td><td>${item.batch}</td><td>${item.amount} ${item.unit}</td><td>${item.profile}</td></tr>`;
-    });
-
-    // Update output table
-    const outputTable = document.getElementById('outputTable').querySelector('tbody');
-    outputTable.innerHTML = '';
-    outputs.forEach(item => {
-        outputTable.innerHTML += `<tr><td>${item.batch}</td><td>${item.amount} ${item.unit}</td><td>${item.conversion}</td><td>${item.vendor}</td></tr>`;
-    });
-
-    // Update batch dropdown
-    const batchSelect = document.getElementById('outputBatch');
-    batchSelect.innerHTML = '<option value="">Choose Batch</option>';
-    intakes.forEach(item => {
-        const remaining = toLbs(item.amount, item.unit) - outputs.filter(o => o.batch === item.batch).reduce((sum, o) => sum + toLbs(o.amount, o.unit), 0);
-        batchSelect.innerHTML += `<option value="${item.batch}">${item.batch} (${remaining.toFixed(1)} lbs remaining)</option>`;
-    });
-
-    // Calculate inventory
-    let totalIntake = intakes.reduce((sum, item) => sum + toLbs(item.amount, item.unit), 0);
-    let totalOutput = outputs.reduce((sum, item) => sum + toLbs(item.amount, item.unit), 0);
-    document.getElementById('inventory').textContent = `Total Remaining Crude Extract: ${(totalIntake - totalOutput).toFixed(1)} lbs`;
 }
 
 // Current state
@@ -1505,40 +1442,22 @@ function saveData() {
     localStorage.setItem('testingRecords', JSON.stringify(testingRecords));
 }
 
-// Add intake
-document.getElementById('intakeForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const intake = {
-        date: document.getElementById('intakeDate').value,
-        batch: document.getElementById('batchId').value,
-        amount: parseFloat(document.getElementById('amount').value),
-        unit: document.getElementById('unit').value,
-        profile: document.getElementById('cannabinoidProfile').value
-    };
-    intakes.push(intake);
-    updateUI();
-    e.target.reset();
-});
+function loadFromStorage() {
+    const savedLots = localStorage.getItem('lots');
+    const savedProcesses = localStorage.getItem('processes');
+    const savedShipments = localStorage.getItem('shipments');
+    const savedChainOfCustody = localStorage.getItem('chainOfCustody');
+    const savedTestingRecords = localStorage.getItem('testingRecords');
 
-// Add output
-document.getElementById('outputForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const output = {
-        batch: document.getElementById('outputBatch').value,
-        amount: parseFloat(document.getElementById('outputAmount').value),
-        unit: document.getElementById('outputUnit').value,
-        conversion: document.getElementById('conversion').value,
-        vendor: document.getElementById('vendor').value
-    };
-    outputs.push(output);
-    updateUI();
-    e.target.reset();
-});
-
-// Quick select DiscountPharms
-function quickSelectDiscountPharms() {
-    document.getElementById('vendor').value = 'DiscountPharms';
+    if (savedLots) lots = JSON.parse(savedLots);
+    if (savedProcesses) processes = JSON.parse(savedProcesses);
+    if (savedShipments) shipments = JSON.parse(savedShipments);
+    if (savedChainOfCustody) chainOfCustody = JSON.parse(savedChainOfCustody);
+    if (savedTestingRecords) testingRecords = JSON.parse(savedTestingRecords);
 }
 
-// Initial load
-loadData().then(() => updateUI());
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadFromStorage();
+    showSection('dashboard');
+});
