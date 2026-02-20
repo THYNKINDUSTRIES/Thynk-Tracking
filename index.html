@@ -18,6 +18,9 @@
                 <div class="col-md-6 text-end">
                     <h5 class="mb-0">Thynk Trace</h5>
                     <small class="text-white">Hemp Traceability System</small>
+                    <div id="backendStatus" class="mt-2">
+                        <span class="badge bg-secondary">Checking...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -154,6 +157,27 @@
             </div>
             <div class="card-body">
                 <p id="inventory">Total Remaining Crude Extract: 0 lbs</p>
+            </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="card mt-4">
+            <div class="card-header bg-dark text-white">
+                <h5>Data Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Export Data</h6>
+                        <button onclick="exportAllData()" class="btn btn-primary mb-2">Export All Data (JSON)</button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Import Data</h6>
+                        <input type="file" id="importJSON" accept=".json" onchange="importJSONData(event)" class="form-control mb-2">
+                        <button onclick="migrateLocalStorageToBackend()" class="btn btn-success">Migrate to Backend</button>
+                        <small class="form-text text-muted">Migrate localStorage data to Google Sheets backend</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
