@@ -200,7 +200,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (lots.find(l => l.id === lot.id)) {
                 showToast('Lot ID already exists — use a unique ID', 'error');
                 return;
-                return;
             }
             
             lots.push(lot);
@@ -1086,6 +1085,11 @@ function updateInventoryView() {
     filterInventory(currentInventoryFilter, null);
 }
 
+/**
+ * Filter and render the inventory table.
+ * @param {string} filter - 'all', 'active', or a category name
+ * @param {HTMLElement|null} activeBtn - The filter button element to mark as active, or null
+ */
 function filterInventory(filter, activeBtn) {
     currentInventoryFilter = filter;
 
