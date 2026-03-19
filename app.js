@@ -9,7 +9,21 @@ let shipments = [];
 let chainOfCustody = [];
 let testingRecords = [];
 
-// Load data from backend
+// Initialize data from localStorage (primary storage)
+function initializeData() {
+    try {
+        lots           = JSON.parse(localStorage.getItem('lots')           || '[]');
+        processes      = JSON.parse(localStorage.getItem('processes')      || '[]');
+        shipments      = JSON.parse(localStorage.getItem('shipments')      || '[]');
+        chainOfCustody = JSON.parse(localStorage.getItem('chainOfCustody') || '[]');
+        testingRecords = JSON.parse(localStorage.getItem('testingRecords') || '[]');
+    } catch (e) {
+        console.error('Error loading from localStorage:', e);
+        lots = []; processes = []; shipments = []; chainOfCustody = []; testingRecords = [];
+    }
+}
+
+// Load data from backend (optional — falls back to localStorage)
 async function loadData() {
     try {
         const [lotsRes, processesRes, shipmentsRes, cocRes, testingRes] = await Promise.all([
@@ -19,13 +33,13 @@ async function loadData() {
             fetch('/api/chainOfCustody'),
             fetch('/api/testingRecords')
         ]);
-        lots = await lotsRes.json();
-        processes = await processesRes.json();
-        shipments = await shipmentsRes.json();
-        chainOfCustody = await cocRes.json();
-        testingRecords = await testingRes.json();
+        if (lotsRes.ok) lots = await lotsRes.json();
+        if (processesRes.ok) processes = await processesRes.json();
+        if (shipmentsRes.ok) shipments = await shipmentsRes.json();
+        if (cocRes.ok) chainOfCustody = await cocRes.json();
+        if (testingRes.ok) testingRecords = await testingRes.json();
     } catch (error) {
-        console.error('Error loading data:', error);
+        console.log('Backend unavailable — using localStorage data');
     }
 }
 
@@ -184,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check if lot ID already exists
             if (lots.find(l => l.id === lot.id)) {
-                alert('Error: Lot ID already exists. Please use a unique ID.');
+                showToast('Lot ID already exists — use a unique ID', 'error');
                 return;
             }
             
@@ -196,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
             saveData();
             updateIntakeTable();
             
-            alert('✓ Intake recorded successfully!');
+            showToast('Intake recorded successfully', 'success');
             intakeForm.reset();
             document.getElementById('intakeFormSection').style.display = 'none';
         });
@@ -348,7 +362,7 @@ function submitSubdivide() {
     const parentLot = lots.find(lot => lot.id === parentLotId);
     
     if (!parentLot) {
-        alert('Please select a parent lot');
+        showToast('Please select a parent lot', 'error');
         return;
     }
     
@@ -370,7 +384,7 @@ function submitSubdivide() {
         
         // Check for duplicate IDs
         if (lots.find(l => l.id === id)) {
-            alert(`Error: Lot ID "${id}" already exists`);
+            showToast(`Lot ID "${id}" already exists`, 'error');
             hasError = true;
             return;
         }
@@ -382,7 +396,7 @@ function submitSubdivide() {
     if (hasError) return;
     
     if (totalQuantity > parentLot.quantity) {
-        alert('Error: Total child lot quantities exceed parent lot quantity');
+        showToast('Total child quantities exceed parent lot quantity', 'error');
         return;
     }
     
@@ -431,7 +445,7 @@ function submitSubdivide() {
     
     saveData();
     
-    alert('✓ Subdivision completed successfully!');
+    showToast('Subdivision completed successfully', 'success');
     
     // Reset form
     document.getElementById('subdivideParentLot').value = '';
@@ -548,22 +562,22 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Validation
             if (!flowerLot || !isolateLot) {
-                alert('Please select valid lots');
+                showToast('Please select valid lots', 'error');
                 return;
             }
             
             if (flowerQty > flowerLot.quantity) {
-                alert('Insufficient flower quantity');
+                showToast('Insufficient flower quantity in selected lot', 'error');
                 return;
             }
             
             if (isolateQty > isolateLot.quantity) {
-                alert('Insufficient isolate quantity');
+                showToast('Insufficient isolate quantity in selected lot', 'error');
                 return;
             }
             
             if (lots.find(l => l.id === outputLotId)) {
-                alert('Output lot ID already exists');
+                showToast('Output lot ID already exists — choose a unique ID', 'error');
                 return;
             }
             
@@ -617,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             saveData();
             
-            alert('✓ Snowcapping completed successfully!');
+            showToast('Snowcapping completed successfully', 'success');
             snowcappingForm.reset();
             updateProcessSection();
         });
@@ -634,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const outputQty = parseFloat(document.getElementById('blendOutputQty').value);
             
             if (lots.find(l => l.id === outputLotId)) {
-                alert('Output lot ID already exists');
+                showToast('Output lot ID already exists — choose a unique ID', 'error');
                 return;
             }
             
@@ -654,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const lot = lots.find(l => l.id === lotId);
                 if (!lot || qty > lot.quantity) {
-                    alert(`Insufficient quantity for lot ${lotId}`);
+                    showToast(`Insufficient quantity for lot ${lotId}`, 'error');
                     hasError = true;
                     return;
                 }
@@ -664,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (hasError || sources.length === 0) {
-                alert('Please provide valid source extracts');
+                showToast('Please provide valid source extracts', 'error');
                 return;
             }
             
@@ -711,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             saveData();
             
-            alert('✓ Blending completed successfully!');
+            showToast('Blending completed successfully', 'success');
             blendingForm.reset();
             updateProcessSection();
         });
@@ -733,17 +747,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const sourceLot = lots.find(lot => lot.id === sourceLotId);
             
             if (!sourceLot) {
-                alert('Please select a valid source lot');
+                showToast('Please select a valid source lot', 'error');
                 return;
             }
             
             if (sourceQty > sourceLot.quantity) {
-                alert('Insufficient source quantity');
+                showToast('Insufficient quantity in source lot', 'error');
                 return;
             }
             
             if (lots.find(l => l.id === outputLotId)) {
-                alert('Output lot ID already exists');
+                showToast('Output lot ID already exists — choose a unique ID', 'error');
                 return;
             }
             
@@ -796,7 +810,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             saveData();
             
-            alert('✓ Conversion completed successfully!');
+            showToast('Conversion completed successfully', 'success');
             conversionForm.reset();
             updateProcessSection();
         });
@@ -902,12 +916,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const lot = lots.find(l => l.id === lotId);
             
             if (!lot) {
-                alert('Please select a valid lot');
+                showToast('Please select a valid lot', 'error');
                 return;
             }
             
             if (qty > lot.quantity) {
-                alert('Insufficient quantity in lot');
+                showToast('Insufficient quantity in selected lot', 'error');
                 return;
             }
             
@@ -953,7 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             saveData();
             
-            alert('✓ Shipment recorded successfully!');
+            showToast('Shipment recorded successfully', 'success');
             shipmentForm.reset();
             updateShipmentSection();
         });
@@ -1009,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const lot = lots.find(l => l.id === lotId);
             
             if (!lot) {
-                alert('Please select a valid lot');
+                showToast('Please select a valid lot', 'error');
                 return;
             }
             
@@ -1037,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             saveData();
             
-            alert('✓ Verification recorded successfully!');
+            showToast('Verification recorded successfully', 'success');
             testingForm.reset();
             updateTestingSection();
         });
@@ -1068,17 +1082,20 @@ function updateTestingTable() {
 // ========================================
 
 function updateInventoryView() {
-    filterInventory(currentInventoryFilter);
+    filterInventory(currentInventoryFilter, null);
 }
 
-function filterInventory(filter) {
+/**
+ * Filter and render the inventory table.
+ * @param {string} filter - 'all', 'active', or a category name
+ * @param {HTMLElement|null} activeBtn - The filter button element to mark as active, or null
+ */
+function filterInventory(filter, activeBtn) {
     currentInventoryFilter = filter;
-    
-    // Update button states
-    document.querySelectorAll('#inventory .btn-group button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event?.target?.classList.add('active');
+
+    // Update filter button states
+    document.querySelectorAll('#inventory .filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (activeBtn) activeBtn.classList.add('active');
     
     const tbody = document.getElementById('inventoryTable');
     if (!tbody) return;
@@ -1086,7 +1103,9 @@ function filterInventory(filter) {
     tbody.innerHTML = '';
     
     let filteredLots = lots;
-    if (filter !== 'all') {
+    if (filter === 'active') {
+        filteredLots = lots.filter(lot => lot.status === 'active');
+    } else if (filter !== 'all') {
         filteredLots = lots.filter(lot => lot.category === filter);
     }
     
@@ -1118,23 +1137,43 @@ function filterInventory(filter) {
 function viewLotDetails(lotId) {
     const lot = lots.find(l => l.id === lotId);
     if (!lot) return;
-    
-    let details = `
-LOT DETAILS
-===========
-Lot ID: ${lot.id}
-Category: ${lot.category}
-Current Quantity: ${lot.quantity} ${lot.unit}
-Original Quantity: ${lot.originalQuantity} ${lot.unit}
-Status: ${lot.status}
-Date: ${lot.date}
-Vendor: ${lot.vendor}
-Product Type: ${lot.productType || 'N/A'}
-Cannabinoid Profile: ${lot.cannabinoidProfile || 'N/A'}
-Notes: ${lot.notes || 'N/A'}
-`;
-    
-    alert(details);
+
+    const fields = [
+        ['Lot ID', lot.id],
+        ['Category', lot.category],
+        ['Current Quantity', `${lot.quantity} ${lot.unit}`],
+        ['Original Quantity', `${lot.originalQuantity} ${lot.unit}`],
+        ['Status', lot.status === 'active' ? '<span class="badge-status badge-active">Active</span>' : '<span class="badge-status badge-depleted">Depleted</span>'],
+        ['Date', lot.date || '—'],
+        ['Vendor', lot.vendor || '—'],
+        ['Product Type', lot.productType || '—'],
+        ['Cannabinoid Profile', lot.cannabinoidProfile || '—'],
+        ['Lot Type', lot.type || '—'],
+        ['Parent Lot', lot.parentLot || '—'],
+        ['Invoice #', lot.invoiceNum || '—'],
+        ['Customer', lot.customerName || '—'],
+        ['COA Link', lot.coaLink ? `<a href="${lot.coaLink}" target="_blank" class="text-bronze">View COA</a>` : '—'],
+        ['COA Match Verified', lot.coaMatchVerified || '—'],
+        ['State Check', lot.stateCheck || '—'],
+        ['Checked By', lot.checkedBy || '—'],
+        ['Notes', lot.notes || '—'],
+    ];
+
+    const body = document.getElementById('lotDetailsBody');
+    body.innerHTML = `
+        <div class="p-2">
+            ${fields.map(([k, v]) => `
+                <div class="lot-detail-row">
+                    <span class="lot-detail-key">${k}</span>
+                    <span class="lot-detail-val">${v}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    document.getElementById('lotDetailsModalLabel').innerHTML = `<i class="bi bi-info-circle me-2"></i>Lot: ${lot.id}`;
+    const modal = new bootstrap.Modal(document.getElementById('lotDetailsModal'));
+    modal.show();
 }
 
 // ========================================
@@ -1171,7 +1210,7 @@ function exportAllData() {
     a.click();
     URL.revokeObjectURL(url);
     
-    alert('✓ Data exported successfully!');
+    showToast('Data exported successfully', 'success');
 }
 
 function exportMasterLedgerCSV() {
@@ -1246,7 +1285,7 @@ function exportMasterLedgerCSV() {
     a.click();
     URL.revokeObjectURL(url);
     
-    alert('✓ Master Ledger CSV exported successfully!');
+    showToast('Master Ledger CSV exported', 'success');
 }
 
 function escapeCSV(value) {
@@ -1353,11 +1392,11 @@ function importMasterLedgerCSV(event) {
             }
             
             saveData();
-            alert(`✓ Successfully imported ${importedCount} records from CSV!`);
+            showToast(`Successfully imported ${importedCount} records from CSV`, 'success');
             showSection('dashboard');
             
         } catch (error) {
-            alert('Error importing CSV: ' + error.message);
+            showToast('Error importing CSV: ' + error.message, 'error');
         }
     };
     
@@ -1505,40 +1544,301 @@ function saveData() {
     localStorage.setItem('testingRecords', JSON.stringify(testingRecords));
 }
 
-// Add intake
-document.getElementById('intakeForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const intake = {
-        date: document.getElementById('intakeDate').value,
-        batch: document.getElementById('batchId').value,
-        amount: parseFloat(document.getElementById('amount').value),
-        unit: document.getElementById('unit').value,
-        profile: document.getElementById('cannabinoidProfile').value
-    };
-    intakes.push(intake);
-    updateUI();
-    e.target.reset();
-});
 
-// Add output
-document.getElementById('outputForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const output = {
-        batch: document.getElementById('outputBatch').value,
-        amount: parseFloat(document.getElementById('outputAmount').value),
-        unit: document.getElementById('outputUnit').value,
-        conversion: document.getElementById('conversion').value,
-        vendor: document.getElementById('vendor').value
-    };
-    outputs.push(output);
-    updateUI();
-    e.target.reset();
-});
 
-// Quick select DiscountPharms
-function quickSelectDiscountPharms() {
-    document.getElementById('vendor').value = 'DiscountPharms';
+// ========================================
+// UI Utility Functions
+// ========================================
+
+/**
+ * Show a toast notification instead of browser alert()
+ * @param {string} message
+ * @param {'success'|'error'|'warning'|'info'} type
+ */
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) { console.log(message); return; }
+
+    const icons = {
+        success: 'bi-check-circle-fill',
+        error:   'bi-x-circle-fill',
+        warning: 'bi-exclamation-triangle-fill',
+        info:    'bi-info-circle-fill'
+    };
+
+    const toastEl = document.createElement('div');
+    toastEl.className = 'toast show mb-2';
+    toastEl.setAttribute('role', 'alert');
+    toastEl.innerHTML = `
+        <div class="toast-body">
+            <i class="bi ${icons[type]} toast-icon toast-icon-${type}"></i>
+            <span>${message}</span>
+            <button type="button" class="btn-close btn-close-white ms-auto" style="filter:invert(0.7);flex-shrink:0;" onclick="this.closest('.toast').remove()"></button>
+        </div>
+    `;
+
+    container.appendChild(toastEl);
+
+    // Auto-dismiss after 4s
+    setTimeout(() => {
+        toastEl.style.opacity = '0';
+        toastEl.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => toastEl.remove(), 400);
+    }, 4000);
 }
 
-// Initial load
-loadData().then(() => updateUI());
+/**
+ * Toggle mobile sidebar
+ */
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+}
+
+/**
+ * Cancel subdivision and reset form
+ */
+function cancelSubdivide() {
+    document.getElementById('subdivideParentLot').value = '';
+    document.getElementById('subdivideFormSection').style.display = 'none';
+    document.getElementById('parentLotInfo').style.display = 'none';
+    document.getElementById('childLotsContainer').innerHTML = '';
+}
+
+/**
+ * Auto-suggest a child lot ID based on parent lot
+ */
+function suggestChildLotId(parentLotId, childNumber) {
+    const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    return `${parentLotId}-SUB${childNumber}-${today}`;
+}
+
+// ========================================
+// Dashboard Enhancements
+// ========================================
+
+function updateDashboard() {
+    const activeLots = lots.filter(lot => lot.status === 'active');
+    const today = new Date().toDateString();
+    const todayProcesses = processes.filter(p => new Date(p.date).toDateString() === today);
+
+    // Stats
+    document.getElementById('statsActiveLots').textContent = activeLots.length;
+    document.getElementById('statsProcesses').textContent = todayProcesses.length;
+    document.getElementById('statsShipments').textContent = shipments.length;
+    document.getElementById('statsTotalItems').textContent = lots.length;
+
+    // Recent Activity
+    const recentDiv = document.getElementById('dashboardRecentActivity');
+    const allEvents = [
+        ...lots.slice(-10).map(l => ({ time: l.timestamp, text: `Lot ${l.id} — ${l.type} (${l.category})`, icon: 'bi-box' })),
+        ...processes.slice(-10).map(p => ({ time: p.timestamp, text: `${p.type} process completed`, icon: 'bi-arrow-repeat' })),
+        ...shipments.slice(-10).map(s => ({ time: s.timestamp, text: `Shipped ${s.quantity} to ${s.recipient}`, icon: 'bi-send' }))
+    ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 8);
+
+    if (allEvents.length === 0) {
+        recentDiv.innerHTML = '<p class="text-muted text-center py-4">No recent activity</p>';
+    } else {
+        recentDiv.innerHTML = allEvents.map(e => `
+            <div class="activity-item">
+                <i class="bi ${e.icon} text-bronze"></i>
+                <span class="activity-text">${e.text}</span>
+                <span class="activity-time">${e.time ? new Date(e.time).toLocaleDateString() : ''}</span>
+            </div>
+        `).join('');
+    }
+
+    // Inventory Snapshot
+    const snapshotDiv = document.getElementById('dashboardInventorySnapshot');
+    const categories = ['Plant Material', 'Concentrates', 'Edibles', 'Topicals'];
+    const categoryIcons = {
+        'Plant Material': 'bi-flower1',
+        'Concentrates': 'bi-droplet-half',
+        'Edibles': 'bi-cup-straw',
+        'Topicals': 'bi-bandaid'
+    };
+
+    const rows = categories.map(cat => {
+        const catLots = activeLots.filter(l => l.category === cat);
+        return catLots.length > 0 ? `
+            <div class="snapshot-row">
+                <div class="snapshot-category">
+                    <i class="bi ${categoryIcons[cat]} text-bronze"></i>
+                    <span>${cat}</span>
+                </div>
+                <span class="snapshot-count">${catLots.length} lot${catLots.length !== 1 ? 's' : ''}</span>
+            </div>
+        ` : '';
+    }).filter(Boolean).join('');
+
+    snapshotDiv.innerHTML = rows || '<p class="text-muted text-center py-4">No active inventory</p>';
+}
+
+// ========================================
+// Enhanced Subdivide UX
+// ========================================
+
+// Improved showSubdivideForm with better parent lot display
+function showSubdivideForm() {
+    const parentLotId = document.getElementById('subdivideParentLot').value;
+    if (!parentLotId) {
+        document.getElementById('parentLotInfo').style.display = 'none';
+        document.getElementById('subdivideFormSection').style.display = 'none';
+        return;
+    }
+
+    const parentLot = lots.find(lot => lot.id === parentLotId);
+    if (!parentLot) return;
+
+    // Enhanced parent lot info banner
+    const infoDiv = document.getElementById('parentLotInfo');
+    infoDiv.style.display = 'block';
+    infoDiv.innerHTML = `
+        <div class="parent-lot-banner">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <div class="lot-id">${parentLot.id}</div>
+                    <div class="lot-meta">
+                        ${parentLot.category} · ${parentLot.vendor || 'Unknown vendor'} · Received ${parentLot.date || 'N/A'}
+                    </div>
+                    ${parentLot.cannabinoidProfile ? `<div class="lot-meta" style="margin-top:4px;color:#999;">${parentLot.cannabinoidProfile}</div>` : ''}
+                </div>
+                <div class="text-end">
+                    <div class="lot-qty">${parentLot.quantity} ${parentLot.unit}</div>
+                    <div class="lot-meta">available to allocate</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Show form
+    document.getElementById('subdivideFormSection').style.display = 'block';
+    document.getElementById('remainingUnit').textContent = parentLot.unit;
+
+    // Clear existing child lots and add the first one
+    const container = document.getElementById('childLotsContainer');
+    container.innerHTML = '';
+    addChildLot();
+
+    updateRemainingQuantity();
+}
+
+// Enhanced addChildLot with auto-suggest ID
+function addChildLot() {
+    const container = document.getElementById('childLotsContainer');
+    const count = container.querySelectorAll('.child-lot-form').length + 1;
+
+    const parentLotId = document.getElementById('subdivideParentLot').value;
+    const parentLot = lots.find(lot => lot.id === parentLotId);
+    if (!parentLot) return;
+
+    const suggestedId = suggestChildLotId(parentLotId, count);
+
+    const div = document.createElement('div');
+    div.className = 'child-lot-form';
+    div.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0" style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);">
+                CHILD LOT #${count}
+            </h6>
+            ${count > 1 ? `<button type="button" class="btn btn-sm" style="background:rgba(239,68,68,0.15);color:#ef4444;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;" onclick="removeChildLot(this)">
+                <i class="bi bi-trash me-1"></i>Remove
+            </button>` : ''}
+        </div>
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label">Child Lot ID <span class="required">*</span></label>
+                <input type="text" class="form-control child-lot-id" value="${suggestedId}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Quantity <span class="required">*</span></label>
+                <input type="number" step="0.001" min="0.001" class="form-control child-lot-quantity"
+                       placeholder="0.000" required oninput="updateRemainingQuantity()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Unit</label>
+                <input type="text" class="form-control child-lot-unit" value="${parentLot.unit}" readonly
+                       style="opacity:0.6;cursor:not-allowed;">
+            </div>
+        </div>
+    `;
+
+    container.appendChild(div);
+    // Focus the quantity field
+    setTimeout(() => div.querySelector('.child-lot-quantity')?.focus(), 50);
+    updateRemainingQuantity();
+}
+
+// Enhanced updateRemainingQuantity with progress bar
+function updateRemainingQuantity() {
+    const parentLotId = document.getElementById('subdivideParentLot').value;
+    const parentLot = lots.find(lot => lot.id === parentLotId);
+    if (!parentLot) return;
+
+    let totalAllocated = 0;
+    document.querySelectorAll('.child-lot-quantity').forEach(input => {
+        totalAllocated += parseFloat(input.value) || 0;
+    });
+
+    const remaining = parentLot.quantity - totalAllocated;
+    const pct = Math.min((totalAllocated / parentLot.quantity) * 100, 100);
+    const isOver = remaining < 0;
+
+    document.getElementById('remainingQuantity').textContent = Math.abs(remaining).toFixed(3);
+    document.getElementById('remainingUnit').textContent = parentLot.unit;
+
+    // Update progress bar
+    const bar = document.getElementById('allocationBar');
+    if (bar) {
+        bar.style.width = pct + '%';
+        bar.className = 'progress-bar' + (isOver ? ' over' : '');
+    }
+
+    // Labels
+    const allocLbl = document.getElementById('allocatedLabel');
+    const totalLbl = document.getElementById('totalLabel');
+    if (allocLbl) allocLbl.textContent = `${totalAllocated.toFixed(3)} allocated`;
+    if (totalLbl) totalLbl.textContent = `${parentLot.quantity} total`;
+
+    // Remaining display
+    const remainEl = document.getElementById('remainingQuantity');
+    if (remainEl) {
+        remainEl.style.color = isOver ? '#ef4444' : (remaining === 0 ? '#22c55e' : 'var(--text-primary)');
+        const parent = remainEl.closest('.qty-value');
+        if (parent && isOver) {
+            parent.style.color = '#ef4444';
+        }
+    }
+}
+
+// ========================================
+// App Initialization
+// ========================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Load data from localStorage first (instant)
+    initializeData();
+
+    // Set up navigation active states
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            // Close mobile sidebar on nav click
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+    });
+
+    // Show dashboard on load
+    showSection('dashboard');
+
+    // Try to sync with backend in background (non-blocking)
+    loadData().then(() => {
+        updateDashboard();
+    }).catch(() => {
+        // Already using localStorage, no action needed
+    });
+});
