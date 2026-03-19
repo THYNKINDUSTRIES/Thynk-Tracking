@@ -3,162 +3,888 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thynk Trace - Hemp Traceability System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Thynk Trace — Hemp Traceability System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="text-white py-3" style="background-color: #000000 !important;">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <img src="https://static.wixstatic.com/media/c1b522_9bfda6d971b440188dba5d8c1b0e89a6~mv2.png/v1/fill/w_229,h_87,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/c1b522_9bfda6d971b440188dba5d8c1b0e89a6~mv2.png" alt="Thynk Industries Logo" class="img-fluid" style="max-height: 60px;">
-                </div>
-                <div class="col-md-6 text-end">
-                    <h5 class="mb-0">Thynk Trace</h5>
-                    <small class="text-white">Hemp Traceability System</small>
-                </div>
-            </div>
+<!-- ===== SIDEBAR ===== -->
+<nav id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <img src="https://static.wixstatic.com/media/c1b522_9bfda6d971b440188dba5d8c1b0e89a6~mv2.png/v1/fill/w_229,h_87,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/c1b522_9bfda6d971b440188dba5d8c1b0e89a6~mv2.png"
+             alt="Thynk Industries" class="sidebar-logo">
+        <div class="sidebar-brand">
+            <span class="sidebar-title">Thynk Trace</span>
+            <span class="sidebar-subtitle">Hemp Traceability</span>
         </div>
-    </header>
-    <div class="container mt-5">
-        
-        <!-- Intake Form -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5>Add Crude Extract Intake</h5>
-            </div>
-            <div class="card-body">
-                <form id="intakeForm">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label for="intakeDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="intakeDate" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="batchId" class="form-label">Batch ID</label>
-                            <input type="text" class="form-control" id="batchId" placeholder="e.g. BATCH-001" required>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="amount" class="form-label">Amount</label>
-                            <input type="number" class="form-control" id="amount" min="0" step="0.1" required>
-                        </div>
-                        <div class="col-md-1">
-                            <label for="unit" class="form-label">Unit</label>
-                            <select class="form-control" id="unit" required>
-                                <option value="lbs">lbs</option>
-                                <option value="kg">kg</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="cannabinoidProfile" class="form-label">Cannabinoid Profile</label>
-                            <input type="text" class="form-control" id="cannabinoidProfile" placeholder="e.g. THC 10%, CBD 5%">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-success mt-3">Add Intake</button>
-                </form>
-            </div>
-        </div>
+    </div>
+    <div class="sidebar-nav">
+        <button class="nav-item active" onclick="showSection('dashboard')" data-section="dashboard">
+            <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="showSection('bulkIntake')" data-section="bulkIntake">
+            <i class="bi bi-box-arrow-in-down"></i><span>Bulk Intake</span>
+        </button>
+        <button class="nav-item" onclick="showSection('subdivideLots')" data-section="subdivideLots">
+            <i class="bi bi-diagram-3"></i><span>Subdivide Lots</span>
+        </button>
+        <button class="nav-item" onclick="showSection('processConvert')" data-section="processConvert">
+            <i class="bi bi-arrow-repeat"></i><span>Process / Convert</span>
+        </button>
+        <button class="nav-item" onclick="showSection('outputShip')" data-section="outputShip">
+            <i class="bi bi-send"></i><span>Output &amp; Ship</span>
+        </button>
+        <button class="nav-item" onclick="showSection('testing')" data-section="testing">
+            <i class="bi bi-clipboard2-check"></i><span>Verification</span>
+        </button>
+        <button class="nav-item" onclick="showSection('inventory')" data-section="inventory">
+            <i class="bi bi-boxes"></i><span>Inventory</span>
+        </button>
+        <button class="nav-item" onclick="showSection('reports')" data-section="reports">
+            <i class="bi bi-bar-chart-line"></i><span>Reports</span>
+        </button>
+    </div>
+    <div class="sidebar-footer">
+        <button class="btn-sidebar-action" onclick="exportAllData()" title="Export JSON Backup">
+            <i class="bi bi-download"></i> Export
+        </button>
+        <button class="btn-sidebar-action" onclick="document.getElementById('csvImportInput').click()" title="Import CSV">
+            <i class="bi bi-upload"></i> Import
+        </button>
+        <input type="file" id="csvImportInput" accept=".csv" style="display:none" onchange="importMasterLedgerCSV(event)">
+    </div>
+</nav>
 
-        <!-- Output Form -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5>Add Distillate Output</h5>
+<!-- ===== MOBILE TOPBAR ===== -->
+<div class="mobile-topbar d-flex d-lg-none align-items-center px-3 py-2">
+    <button class="btn-hamburger me-3" onclick="toggleSidebar()">
+        <i class="bi bi-list fs-4"></i>
+    </button>
+    <span class="fw-semibold text-white">Thynk Trace</span>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main id="mainContent" class="main-content">
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="nav-section">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+            <p class="section-subtitle">At-a-glance overview of your hemp traceability system</p>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-green"><i class="bi bi-boxes"></i></div>
+                <div class="stat-body">
+                    <div class="stat-value" id="statsActiveLots">0</div>
+                    <div class="stat-label">Active Lots</div>
+                </div>
             </div>
-            <div class="card-body">
-                <form id="outputForm">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label for="outputBatch" class="form-label">Select Batch</label>
-                            <select class="form-control" id="outputBatch" required>
-                                <option value="">Choose Batch</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="outputAmount" class="form-label">Amount</label>
-                            <input type="number" class="form-control" id="outputAmount" min="0" step="0.1" required>
-                        </div>
-                        <div class="col-md-1">
-                            <label for="outputUnit" class="form-label">Unit</label>
-                            <select class="form-control" id="outputUnit" required>
-                                <option value="lbs">lbs</option>
-                                <option value="kg">kg</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="conversion" class="form-label">Conversion</label>
-                            <input type="text" class="form-control" id="conversion" placeholder="e.g. THC to Distillate">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="vendor" class="form-label">Vendor</label>
-                            <select class="form-control" id="vendor" required>
-                                <option value="DiscountPharms">DiscountPharms (Quick Select)</option>
-                                <option value="Other">Other Vendor</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-warning mt-3">Add Output</button>
-                    <button type="button" class="btn btn-info mt-3 ms-2" onclick="quickSelectDiscountPharms()">Quick to DiscountPharms</button>
-                </form>
+            <div class="stat-card">
+                <div class="stat-icon bg-blue"><i class="bi bi-arrow-repeat"></i></div>
+                <div class="stat-body">
+                    <div class="stat-value" id="statsProcesses">0</div>
+                    <div class="stat-label">Today's Processes</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-bronze"><i class="bi bi-send"></i></div>
+                <div class="stat-body">
+                    <div class="stat-value" id="statsShipments">0</div>
+                    <div class="stat-label">Total Shipments</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-purple"><i class="bi bi-collection"></i></div>
+                <div class="stat-body">
+                    <div class="stat-value" id="statsTotalItems">0</div>
+                    <div class="stat-label">Total Lots</div>
+                </div>
             </div>
         </div>
-
-        <!-- Logs and Inventory -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h5>Intake Log</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped" id="intakeTable">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Batch ID</th>
-                                    <th>Amount (lbs)</th>
-                                    <th>Profile</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+        <div class="row g-4 mt-2">
+            <div class="col-lg-7">
+                <div class="card h-100">
+                    <div class="card-header-custom"><i class="bi bi-clock-history me-2"></i>Recent Activity</div>
+                    <div class="card-body-custom" id="dashboardRecentActivity">
+                        <p class="text-muted text-center py-4">No recent activity</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-warning text-white">
-                        <h5>Output Log</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-striped" id="outputTable">
-                            <thead>
-                                <tr>
-                                    <th>Batch</th>
-                                    <th>Amount (lbs)</th>
-                                    <th>Conversion</th>
-                                    <th>Vendor</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+            <div class="col-lg-5">
+                <div class="card h-100">
+                    <div class="card-header-custom"><i class="bi bi-pie-chart me-2"></i>Inventory Snapshot</div>
+                    <div class="card-body-custom" id="dashboardInventorySnapshot">
+                        <p class="text-muted text-center py-4">No inventory data</p>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
 
+    <!-- BULK INTAKE -->
+    <section id="bulkIntake" class="nav-section section-hidden">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-box-arrow-in-down me-2"></i>Bulk Intake</h1>
+            <p class="section-subtitle">Record incoming products. Select a category to begin.</p>
+        </div>
+        <div class="category-picker mb-4">
+            <button class="category-btn" onclick="selectCategory('Plant Material')">
+                <i class="bi bi-flower1"></i><span>Plant Material</span><small>Flower, Hemp, Pre-rolls</small>
+            </button>
+            <button class="category-btn" onclick="selectCategory('Concentrates')">
+                <i class="bi bi-droplet-half"></i><span>Concentrates</span><small>Extracts, Isolates, Oils</small>
+            </button>
+            <button class="category-btn" onclick="selectCategory('Edibles')">
+                <i class="bi bi-cup-straw"></i><span>Edibles</span><small>Gummies, Beverages</small>
+            </button>
+            <button class="category-btn" onclick="selectCategory('Topicals')">
+                <i class="bi bi-bandaid"></i><span>Topicals</span><small>Creams, Balms, Patches</small>
+            </button>
+        </div>
+        <div id="intakeFormSection" style="display:none;">
+            <div class="card">
+                <div class="card-header-custom">
+                    <i class="bi bi-pencil-square me-2"></i>Intake Details — <span id="intakeCategoryLabel" class="text-bronze"></span>
+                </div>
+                <div class="card-body-custom">
+                    <form id="intakeForm">
+                        <input type="hidden" id="intakeCategory">
+                        <h6 class="form-section-label">Lot Identification</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Lot ID <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="intakeLotId" placeholder="e.g. LOT-2024-001" required>
+                                <div class="form-text">Must be unique across all lots</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Lot Identifier (COA)</label>
+                                <input type="text" class="form-control" id="intakeLotIdentifier" placeholder="Lab lot / batch identifier">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Product SKU</label>
+                                <input type="text" class="form-control" id="intakeProductSKU" placeholder="SKU or product code">
+                            </div>
+                        </div>
+                        <h6 class="form-section-label">Quantity &amp; Product</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label">Quantity <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="intakeQuantity" min="0.001" step="0.001" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Unit <span class="required">*</span></label>
+                                <select class="form-select" id="intakeUnit" required>
+                                    <option value="lbs">lbs</option>
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                    <option value="oz">oz</option>
+                                    <option value="units">units</option>
+                                    <option value="mL">mL</option>
+                                    <option value="L">L</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Product Type</label>
+                                <input type="text" class="form-control" id="intakeProductType" placeholder="e.g. THCa Flower, CBD Isolate">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Date <span class="required">*</span></label>
+                                <input type="date" class="form-control" id="intakeDate" required>
+                            </div>
+                        </div>
+                        <h6 class="form-section-label">Vendor &amp; Compliance</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Vendor <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="intakeVendor" placeholder="Vendor / Supplier name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cannabinoid Profile</label>
+                                <input type="text" class="form-control" id="intakeCannabinoidProfile" placeholder="e.g. THCa 20%, CBD 1%">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">COA Link</label>
+                                <input type="url" class="form-control" id="intakeCOALink" placeholder="https://...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">COA Match Verified</label>
+                                <select class="form-select" id="intakeCOAMatchVerified">
+                                    <option value="">— Select —</option>
+                                    <option value="Y">Yes</option>
+                                    <option value="N">No</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+                        </div>
+                        <h6 class="form-section-label">Master Ledger Fields <span class="badge bg-secondary ms-1" style="font-size:0.65rem;font-weight:500;">Optional</span></h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label">Invoice #</label>
+                                <input type="text" class="form-control" id="intakeInvoiceNum" placeholder="Invoice number">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Invoice Date</label>
+                                <input type="date" class="form-control" id="intakeInvoiceDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Customer Name</label>
+                                <input type="text" class="form-control" id="intakeCustomerName" placeholder="Customer">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Monday Item ID</label>
+                                <input type="text" class="form-control" id="intakeMondayItemId" placeholder="Monday.com item">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Monday Link</label>
+                                <input type="url" class="form-control" id="intakeMondayLink" placeholder="https://...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" id="intakeNotes" rows="2" placeholder="Additional notes or exception flags"></textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-plus-circle me-2"></i>Record Intake
+                            </button>
+                            <button type="button" class="btn btn-outline-custom" onclick="document.getElementById('intakeFormSection').style.display='none'">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <div class="card mt-4">
-            <div class="card-header bg-secondary text-white">
-                <h5>Current Inventory</h5>
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-table me-2"></i>Recent Intake History</span>
+                <span class="badge-count" id="intakeCount">0 lots</span>
             </div>
-            <div class="card-body">
-                <p id="inventory">Total Remaining Crude Extract: 0 lbs</p>
+            <div class="card-body-custom p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead><tr><th>Lot ID</th><th>Category</th><th>Quantity</th><th>Date</th><th>Vendor</th><th>Status</th></tr></thead>
+                        <tbody id="intakeTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SUBDIVIDE LOTS -->
+    <section id="subdivideLots" class="nav-section section-hidden">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-diagram-3 me-2"></i>Subdivide Lots</h1>
+            <p class="section-subtitle">Break a parent lot into child sub-lots. Quantities must balance.</p>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header-custom"><span class="step-badge">1</span> Select Parent Lot</div>
+            <div class="card-body-custom">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label">Choose lot to subdivide</label>
+                        <select class="form-select form-select-lg" id="subdivideParentLot" onchange="showSubdivideForm()">
+                            <option value="">— Select an active lot —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-custom w-100" onclick="updateSubdivideLots()">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Lots
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="parentLotInfo" style="display:none;" class="mb-4"></div>
+        <div id="subdivideFormSection" style="display:none;">
+            <div class="card mb-4">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span><span class="step-badge">2</span> Define Child Lots</span>
+                    <button class="btn btn-sm btn-primary-custom" onclick="addChildLot()">
+                        <i class="bi bi-plus-circle me-1"></i> Add Child Lot
+                    </button>
+                </div>
+                <div class="card-body-custom">
+                    <div id="childLotsContainer"></div>
+                    <div class="quantity-tracker mt-4" id="quantityTracker">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="qty-label">Quantity Allocation</span>
+                            <span class="qty-value"><span id="remainingQuantity">0.00</span> <span id="remainingUnit"></span> remaining</span>
+                        </div>
+                        <div class="progress qty-progress">
+                            <div class="progress-bar" id="allocationBar" role="progressbar" style="width:0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small id="allocatedLabel" class="text-muted">0 allocated</small>
+                            <small id="totalLabel" class="text-muted">0 total</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-3 flex-wrap mb-5">
+                <button class="btn btn-primary-custom btn-lg" onclick="submitSubdivide()">
+                    <i class="bi bi-check2-circle me-2"></i>Confirm Subdivision
+                </button>
+                <button class="btn btn-outline-custom" onclick="cancelSubdivide()">Cancel</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header-custom"><i class="bi bi-clock-history me-2"></i>Subdivision History</div>
+            <div class="card-body-custom p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead><tr><th>Parent Lot</th><th>Child Lots</th><th>Date</th><th>Total Qty</th></tr></thead>
+                        <tbody id="subdivideTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESS / CONVERT -->
+    <section id="processConvert" class="nav-section section-hidden">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-arrow-repeat me-2"></i>Process &amp; Convert</h1>
+            <p class="section-subtitle">Apply processing operations to your lots.</p>
+        </div>
+        <div class="process-picker mb-4">
+            <button class="process-card" onclick="selectProcess('snowcapping')">
+                <i class="bi bi-snow2"></i><span>Snowcapping</span><small>Apply THCa isolate to flower</small>
+            </button>
+            <button class="process-card" onclick="selectProcess('blending')">
+                <i class="bi bi-shuffle"></i><span>Blend Extracts</span><small>Combine multiple extract lots</small>
+            </button>
+            <button class="process-card" onclick="selectProcess('conversion')">
+                <i class="bi bi-box-arrow-right"></i><span>Product Conversion</span><small>Convert to finished products</small>
+            </button>
+        </div>
+        <!-- Snowcapping Form -->
+        <div id="snowcappingForm" style="display:none;" class="mb-4">
+            <div class="card">
+                <div class="card-header-custom"><i class="bi bi-snow2 me-2"></i>Snowcapping</div>
+                <div class="card-body-custom">
+                    <form id="snowcappingFormElement">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Flower Lot <span class="required">*</span></label>
+                                <select class="form-select" id="snowcapFlowerLot" required>
+                                    <option value="">— Select flower lot —</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Flower Qty <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="snowcapFlowerQty" min="0.001" step="0.001" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Isolate Lot <span class="required">*</span></label>
+                                <select class="form-select" id="snowcapIsolateLot" required>
+                                    <option value="">— Select isolate lot —</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Isolate Qty <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="snowcapIsolateQty" min="0.001" step="0.001" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Output Lot ID <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="snowcapOutputLot" placeholder="New lot ID" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Date <span class="required">*</span></label>
+                                <input type="date" class="form-control" id="snowcapDate" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Notes</label>
+                                <input type="text" class="form-control" id="snowcapNotes" placeholder="Optional notes">
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex gap-3">
+                            <button type="submit" class="btn btn-primary-custom"><i class="bi bi-snow2 me-2"></i>Submit Snowcapping</button>
+                            <button type="button" class="btn btn-outline-custom" onclick="selectProcess(null)">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Blending Form -->
+        <div id="blendingForm" style="display:none;" class="mb-4">
+            <div class="card">
+                <div class="card-header-custom"><i class="bi bi-shuffle me-2"></i>Blend Extracts</div>
+                <div class="card-body-custom">
+                    <form id="blendingFormElement">
+                        <h6 class="form-section-label">Source Extracts</h6>
+                        <div id="blendSourcesContainer">
+                            <div class="blend-source mb-3 p-3 border-custom rounded">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <select class="form-select blend-source-lot" required>
+                                            <option value="">— Select extract lot —</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="number" step="0.001" class="form-control blend-source-qty" placeholder="Quantity" required>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="text-muted small">(First source)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-custom mb-4" onclick="addBlendSource()">
+                            <i class="bi bi-plus-circle me-1"></i>Add Another Source
+                        </button>
+                        <h6 class="form-section-label">Output</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Output Lot ID <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="blendOutputLot" placeholder="New lot ID" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Blend Type <span class="required">*</span></label>
+                                <select class="form-select" id="blendType" required>
+                                    <option value="">— Select type —</option>
+                                    <option value="Full Spectrum">Full Spectrum</option>
+                                    <option value="Broad Spectrum">Broad Spectrum</option>
+                                    <option value="Custom Blend">Custom Blend</option>
+                                    <option value="THCa Blend">THCa Blend</option>
+                                    <option value="CBD Blend">CBD Blend</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Output Qty <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="blendOutputQty" min="0.001" step="0.001" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Date <span class="required">*</span></label>
+                                <input type="date" class="form-control" id="blendDate" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Notes</label>
+                                <input type="text" class="form-control" id="blendNotes" placeholder="Optional notes">
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex gap-3">
+                            <button type="submit" class="btn btn-primary-custom"><i class="bi bi-shuffle me-2"></i>Submit Blend</button>
+                            <button type="button" class="btn btn-outline-custom" onclick="selectProcess(null)">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Conversion Form -->
+        <div id="conversionForm" style="display:none;" class="mb-4">
+            <div class="card">
+                <div class="card-header-custom"><i class="bi bi-box-arrow-right me-2"></i>Product Conversion</div>
+                <div class="card-body-custom">
+                    <form id="conversionFormElement">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="form-label">Source Lot <span class="required">*</span></label>
+                                <select class="form-select" id="conversionSourceLot" required>
+                                    <option value="">— Select source lot —</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Quantity to Use <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="conversionSourceQty" min="0.001" step="0.001" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Product Type <span class="required">*</span></label>
+                                <select class="form-select" id="conversionProductType" required>
+                                    <option value="">— Select product —</option>
+                                    <option value="vapes">Vapes / Cartridges</option>
+                                    <option value="gummies">Gummies / Edibles</option>
+                                    <option value="prerolls">Pre-Rolls</option>
+                                    <option value="beverages">Beverages</option>
+                                    <option value="flower">Weighed / Bagged Flower</option>
+                                    <option value="tinctures">Tinctures</option>
+                                    <option value="capsules">Capsules / Softgels</option>
+                                    <option value="topicals">Topicals / Creams</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Output Lot ID <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="conversionOutputLot" placeholder="New lot ID" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Units <span class="required">*</span></label>
+                                <input type="number" class="form-control" id="conversionUnits" min="1" step="1" placeholder="# of units" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Unit Size</label>
+                                <input type="text" class="form-control" id="conversionUnitSize" placeholder="e.g. 1g, 500mg, 12oz">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Date <span class="required">*</span></label>
+                                <input type="date" class="form-control" id="conversionDate" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Notes</label>
+                                <input type="text" class="form-control" id="conversionNotes" placeholder="Optional notes">
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex gap-3">
+                            <button type="submit" class="btn btn-primary-custom"><i class="bi bi-box-arrow-right me-2"></i>Submit Conversion</button>
+                            <button type="button" class="btn btn-outline-custom" onclick="selectProcess(null)">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header-custom"><i class="bi bi-table me-2"></i>Process History</div>
+            <div class="card-body-custom p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead><tr><th>Type</th><th>Inputs</th><th>Output Lot</th><th>Date</th><th>Details</th></tr></thead>
+                        <tbody id="processTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- OUTPUT & SHIP -->
+    <section id="outputShip" class="nav-section section-hidden">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-send me-2"></i>Output &amp; Ship</h1>
+            <p class="section-subtitle">Record outbound shipments and transfers.</p>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header-custom"><i class="bi bi-pencil-square me-2"></i>New Shipment</div>
+            <div class="card-body-custom">
+                <form id="shipmentForm">
+                    <h6 class="form-section-label">Lot Selection</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Lot <span class="required">*</span></label>
+                            <select class="form-select" id="shipmentLot" required>
+                                <option value="">— Select lot to ship —</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Quantity to Ship <span class="required">*</span></label>
+                            <input type="number" class="form-control" id="shipmentQty" min="0.001" step="0.001" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Ship Date <span class="required">*</span></label>
+                            <input type="date" class="form-control" id="shipmentDate" required>
+                        </div>
+                    </div>
+                    <h6 class="form-section-label">Recipient</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Recipient <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="shipmentRecipient" placeholder="Company / Person name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ship-To Name</label>
+                            <input type="text" class="form-control" id="shipmentShipToName" placeholder="Attention / Contact name">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ship-To Address</label>
+                            <input type="text" class="form-control" id="shipmentShipToAddress" placeholder="Street address">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" id="shipmentShipToCity">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-control" id="shipmentShipToState" placeholder="TX" maxlength="2">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">ZIP</label>
+                            <input type="text" class="form-control" id="shipmentShipToZIP" placeholder="12345">
+                        </div>
+                    </div>
+                    <h6 class="form-section-label">Carrier &amp; Tracking</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label">Carrier</label>
+                            <select class="form-select" id="shipmentCarrier">
+                                <option value="">— Select carrier —</option>
+                                <option value="UPS">UPS</option>
+                                <option value="FedEx">FedEx</option>
+                                <option value="USPS">USPS</option>
+                                <option value="DHL">DHL</option>
+                                <option value="Local Courier">Local Courier</option>
+                                <option value="Hand Delivery">Hand Delivery</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tracking #</label>
+                            <input type="text" class="form-control" id="shipmentTracking" placeholder="Tracking number">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">UPS WebGate Shipment ID</label>
+                            <input type="text" class="form-control" id="shipmentUPSWebGateId" placeholder="WebGate ID">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Routing</label>
+                            <select class="form-select" id="shipmentRouting">
+                                <option value="">— Select routing —</option>
+                                <option value="Standard">Standard</option>
+                                <option value="Depot">Depot</option>
+                                <option value="Express">Express</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h6 class="form-section-label">Financials <span class="badge bg-secondary ms-1" style="font-size:0.65rem;">Optional</span></h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label">Price / UOM</label>
+                            <input type="text" class="form-control" id="shipmentPricePerUOM" placeholder="e.g. $12.50">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Extended Total</label>
+                            <input type="text" class="form-control" id="shipmentExtendedTotal" placeholder="e.g. $250.00">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Payment Status</label>
+                            <select class="form-select" id="shipmentPaymentStatus">
+                                <option value="">— Select —</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Overdue">Overdue</option>
+                                <option value="Net30">Net 30</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h6 class="form-section-label">Checklist</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label">Packet Complete</label>
+                            <select class="form-select" id="shipmentPacketComplete">
+                                <option value="">—</option><option value="Y">Yes</option><option value="N">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Carrier Letter Included</label>
+                            <select class="form-select" id="shipmentCarrierLetter">
+                                <option value="">—</option><option value="Y">Yes</option><option value="N">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">License Copy Included</label>
+                            <select class="form-select" id="shipmentLicenseCopy">
+                                <option value="">—</option><option value="Y">Yes</option><option value="N">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Count Verified</label>
+                            <select class="form-select" id="shipmentCountVerified">
+                                <option value="">—</option><option value="Y">Yes</option><option value="N">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Final Sign-Off</label>
+                            <input type="text" class="form-control" id="shipmentFinalSignOff" placeholder="Initials or name">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Archive Folder Link</label>
+                            <input type="url" class="form-control" id="shipmentArchiveLink" placeholder="https://...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Notes</label>
+                            <input type="text" class="form-control" id="shipmentNotes" placeholder="Notes / exceptions">
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary-custom btn-lg">
+                            <i class="bi bi-send me-2"></i>Record Shipment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header-custom"><i class="bi bi-table me-2"></i>Shipment History</div>
+            <div class="card-body-custom p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead><tr><th>Lot ID</th><th>Quantity</th><th>Recipient</th><th>Date</th><th>Tracking</th><th>Status</th></tr></thead>
+                        <tbody id="shipmentTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VERIFICATION / TESTING -->
+    <section id="testing" class="nav-section section-hidden">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-clipboard2-check me-2"></i>Verification</h1>
+            <p class="section-subtitle">Record state checks, COA verifications, and Thynk Brain™ consultations.</p>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header-custom"><i class="bi bi-pencil-square me-2"></i>New Verification Record</div>
+            <div class="card-body-custom">
+                <form id="testingForm">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Lot <span class="required">*</span></label>
+                            <select class="form-select" id="testingLot" required>
+                                <option value="">— Select lot —</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">State Check Result <span class="required">*</span></label>
+                            <select class="form-select" id="testingStateCheck" required>
+                                <option value="">— Select result —</option>
+                                <option value="PASS">✅ PASS</option>
+                                <option value="FAIL">❌ FAIL</option>
+                                <option value="CONFIRM">⚠️ CONFIRM</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Checked By <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="testingCheckedBy" placeholder="Name / Initials" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date Checked <span class="required">*</span></label>
+                            <input type="date" class="form-control" id="testingCheckedDate" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Thynk Brain™ Consulted</label>
+                            <select class="form-select" id="testingThynkBrainConsulted">
+                                <option value="">—</option>
+                                <option value="Y">Yes</option>
+                                <option value="N">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-9">
+                            <label class="form-label">Thynk Brain™ Notes</label>
+                            <input type="text" class="form-control" id="testingThynkBrainNotes" placeholder="Reference notes from Thynk Brain™">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="bi bi-clipboard2-check me-2"></i>Save Verification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header-custom"><i class="bi bi-table me-2"></i>Verification History</div>
+            <div class="card-body-custom p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead><tr><th>Lot ID</th><th>State Check</th><th>Checked By</th><th>Date</th><th>Thynk Brain™</th></tr></thead>
+                        <tbody id="testingTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INVENTORY -->
+    <section id="inventory" class="nav-section section-hidden">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-boxes me-2"></i>Inventory</h1>
+            <p class="section-subtitle">View and filter all lots across all categories.</p>
+        </div>
+        <div class="filter-bar mb-4">
+            <button class="filter-btn active" onclick="filterInventory('all', this)">All Lots</button>
+            <button class="filter-btn" onclick="filterInventory('Plant Material', this)"><i class="bi bi-flower1 me-1"></i>Plant Material</button>
+            <button class="filter-btn" onclick="filterInventory('Concentrates', this)"><i class="bi bi-droplet-half me-1"></i>Concentrates</button>
+            <button class="filter-btn" onclick="filterInventory('Edibles', this)"><i class="bi bi-cup-straw me-1"></i>Edibles</button>
+            <button class="filter-btn" onclick="filterInventory('Topicals', this)"><i class="bi bi-bandaid me-1"></i>Topicals</button>
+            <button class="filter-btn" onclick="filterInventory('active', this)"><i class="bi bi-check-circle me-1"></i>Active Only</button>
+        </div>
+        <div class="card">
+            <div class="card-body-custom p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead><tr><th>Lot ID</th><th>Category</th><th>Current Qty</th><th>Original Qty</th><th>Status</th><th>Last Updated</th><th>Actions</th></tr></thead>
+                        <tbody id="inventoryTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="reports" class="nav-section section-hidden">
+        <div class="section-header">
+            <h1 class="section-title"><i class="bi bi-bar-chart-line me-2"></i>Reports &amp; Export</h1>
+            <p class="section-subtitle">Export data, generate summaries, and trace chain of custody.</p>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="action-card" onclick="exportAllData()">
+                    <i class="bi bi-file-earmark-json"></i>
+                    <h6>Export All Data</h6>
+                    <p>Download complete JSON backup</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="action-card" onclick="exportMasterLedgerCSV()">
+                    <i class="bi bi-file-earmark-spreadsheet"></i>
+                    <h6>Master Ledger CSV</h6>
+                    <p>Download compliance spreadsheet</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="action-card" onclick="generateSummaryReport()">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <h6>Summary Report</h6>
+                    <p>Generate inventory &amp; process summary</p>
+                </div>
+            </div>
+        </div>
+        <div id="reportOutput" style="display:none;" class="card mb-4">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-earmark-text me-2"></i>Summary Report</span>
+                <button class="btn btn-sm btn-outline-custom" onclick="document.getElementById('reportOutput').style.display='none'"><i class="bi bi-x"></i> Close</button>
+            </div>
+            <div class="card-body-custom">
+                <pre id="reportContent" class="report-pre"></pre>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header-custom"><i class="bi bi-link-45deg me-2"></i>Chain of Custody Viewer</div>
+            <div class="card-body-custom">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Select Lot to Trace</label>
+                        <select class="form-select" id="custodyLotSelect" onchange="showChainOfCustody()">
+                            <option value="">— Select a lot —</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="chainOfCustodyDisplay"></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- LOT DETAILS MODAL -->
+<div class="modal fade" id="lotDetailsModal" tabindex="-1" aria-labelledby="lotDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-dark">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title" id="lotDetailsModalLabel"><i class="bi bi-info-circle me-2"></i>Lot Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="lotDetailsBody"></div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="app.js"></script>
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999;"></div>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
